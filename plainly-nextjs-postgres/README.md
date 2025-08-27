@@ -21,7 +21,7 @@ This is a [Plainly](https://www.plainlyvideos.com/), [Next.js](https://nextjs.or
 ```
 
 3. Upload an example project to Plainly:
-- Download the example project from [here](TODO: update).
+- Download the example project from [here](https://github.com/plainly-videos/examples/blob/master/plainly-nextjs-postgres/Sports%20Matchup.zip).
 - Go to [Upload form](https://app.plainlyvideos.com/dashboard/projects/create) and upload the project.
 - Once the upload is done, create a new template with few parameters from layers:
 
@@ -71,7 +71,7 @@ Response should be:
 
 Open the URL in your browser.
 
-> **Note:** To keep track of your database, you can use run a Prisma Studio instance:
+> **Note:** To keep track of your database, you can run a Prisma Studio instance:
 ```bash
   docker compose exec app pnpm prisma studio 
 ```
