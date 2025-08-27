@@ -1,4 +1,3 @@
-"use server";
 import MatchupForm from "@/components/matchup-form";
 import {
 	Card,
