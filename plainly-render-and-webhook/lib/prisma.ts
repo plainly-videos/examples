@@ -3,11 +3,11 @@ import { env } from "@/constants";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 const globalForPrisma = global as unknown as {
-	prisma: PrismaClient;
+  prisma: PrismaClient;
 };
 
 const prisma =
-	globalForPrisma.prisma || new PrismaClient().$extends(withAccelerate());
+  globalForPrisma.prisma || new PrismaClient().$extends(withAccelerate());
 
 if (env !== "production") globalForPrisma.prisma = prisma;
 
