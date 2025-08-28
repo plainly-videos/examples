@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 
-import { createTunnel, closeTunnel } from "../lib/tunnel";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { closeTunnel, createTunnel } from "../lib/tunnel";
 
 const ENV_FILE = path.join(process.cwd(), ".env.local");
 const PORT = 3000;

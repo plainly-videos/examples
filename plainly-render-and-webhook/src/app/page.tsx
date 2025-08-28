@@ -11,6 +11,7 @@ import prisma from "../../lib/prisma";
 import { DataTable } from "@/components/matchups/data-table";
 import { columns } from "@/components/matchups/columns";
 import WebhookStatus from "@/components/webhook-status";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,15 @@ export default async function Home() {
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <div className="bg-black dark:bg-black p-4 rounded-md">
+          <Image
+            src="/plainly_logo.svg"
+            alt="Plainly Videos logo"
+            width={160}
+            height={32}
+            priority
+          />
+        </div>
         <Card className="w-full max-w-sm min-w-full lg:min-w-3xl">
           <CardHeader>
             <CardTitle>Create new matchup</CardTitle>
@@ -35,6 +45,7 @@ export default async function Home() {
         <WebhookStatus />
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+        <ModeToggle />
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href="https://help.plainlyvideos.com/"
@@ -58,7 +69,7 @@ export default async function Home() {
         >
           <Image
             aria-hidden
-            src="/window.svg"
+            src="/github-142-svgrepo-com.svg"
             alt="Window icon"
             width={16}
             height={16}

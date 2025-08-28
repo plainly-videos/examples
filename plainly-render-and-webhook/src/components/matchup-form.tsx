@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { render } from "@/actions/render";
 import { SubmitButton } from "./submit-button";
 import { TeamCombobox } from "./team-combobox";
 import { Label } from "./ui/label";
-import { render } from "@/actions/render";
 
 export default function MatchupForm() {
   const [data, setData] = useState({
@@ -50,7 +50,7 @@ export default function MatchupForm() {
           </div>
         </div>
       </div>
-      <SubmitButton />
+      <SubmitButton disabled={!data.team1 || !data.team2} />
     </form>
   );
 }
