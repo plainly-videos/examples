@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     console.error("Webhook error:", error);
 
     // Return a 500 status code to indicate a server-side error
+    // This will force Plainly to retry the webhook delivery
     return NextResponse.json(
       { message: "Error processing webhook" },
       { status: 500 },

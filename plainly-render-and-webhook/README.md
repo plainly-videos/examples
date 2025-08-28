@@ -1,4 +1,4 @@
-# Plainly Render and Webhook
+# Render and webhook handling example
 
 This example demonstrates how to build a complete end-to-end video generation workflow with webhook handling using [Plainly Videos](https://www.plainlyvideos.com/), [Next.js](https://nextjs.org), [PostgreSQL](https://www.postgresql.org/) and [Prisma](https://www.prisma.io/) as ORM.
 
