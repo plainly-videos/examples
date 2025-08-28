@@ -21,34 +21,34 @@ import prisma from "../../../../lib/prisma";
  * In case of an error, a 500 status code is returned along with an error message.
  */
 export async function POST(request: NextRequest) {
-	try {
-		// Here you can see the example webhook payloads
-		// https://help.plainlyvideos.com/docs/user-guide/rendering/video-delivery#webhook-delivery
-		const body = await request.json();
-		const { id, output, success } = body;
+  try {
+    // Here you can see the example webhook payloads
+    // https://help.plainlyvideos.com/docs/user-guide/rendering/video-delivery#webhook-delivery
+    const body = await request.json();
+    const { id, output, success } = body;
 
-		// Update matchup in DB based on renderId
-		await prisma.matchup.updateMany({
-			where: { renderId: id },
-			data: {
-				status: success ? "completed" : "failed",
-				videoUrl: output ?? null,
-			},
-		});
+    // Update matchup in DB based on renderId
+    await prisma.matchup.updateMany({
+      where: { renderId: id },
+      data: {
+        status: success ? "completed" : "failed",
+        videoUrl: output ?? null,
+      },
+    });
 
-		// Revalidate cache for the homepage and "matchup" tag
-		revalidatePath("/");
-		revalidateTag("matchup");
+    // Revalidate cache for the homepage and "matchup" tag
+    revalidatePath("/");
+    revalidateTag("matchup");
 
-		return NextResponse.json({ message: "Webhook received" }, { status: 200 });
-	} catch (error) {
-		// Log the error for debugging purposes
-		console.error("Webhook error:", error);
+    return NextResponse.json({ message: "Webhook received" }, { status: 200 });
+  } catch (error) {
+    // Log the error for debugging purposes
+    console.error("Webhook error:", error);
 
-		// Return a 500 status code to indicate a server-side error
-		return NextResponse.json(
-			{ message: "Error processing webhook" },
-			{ status: 500 },
-		);
-	}
+    // Return a 500 status code to indicate a server-side error
+    return NextResponse.json(
+      { message: "Error processing webhook" },
+      { status: 500 },
+    );
+  }
 }
