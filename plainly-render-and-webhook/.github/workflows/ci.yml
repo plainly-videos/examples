@@ -1,4 +1,4 @@
-name: CI
+name: Continuous integration
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
   pull_request:
 
 jobs:
-  lint-format-build:
+  build-plainly-render-and-webhook:
+  name: Build plainly-render-and-webhook
     runs-on: ubuntu-latest
 
     services:
