@@ -42,11 +42,11 @@ By working through this example, you'll understand how to:
 ```
 
 3. Upload an example project to Plainly:
+
 - Download the example project from [here](./Sports%20Matchup.zip).
 - Go to [Upload form](https://app.plainlyvideos.com/dashboard/projects/create) and upload the project.
 - Once the upload is done, auto-generate a template with prefix option:
   - Set the target composition to `editRender`
-  - Set the prefix to `plainly`
   - Click on "Generate"
 
 This will generate a template with few parameters from layers.
@@ -91,17 +91,10 @@ Each time you run this command, you'll get a fresh, unique tunnel URL that won't
 
 ### Webhook Issues
 - Check the webhook status indicator in the UI
-- Verify your `.env.local` file has the correct `NEXT_PUBLIC_WEBHOOK_PUBLIC_URL`
 - Test your webhook endpoint at: `{your-tunnel-url}/api/webhook`
 
 ### Database Issues
 - Ensure PostgreSQL is running: `pnpm db:start`
-- Reset database if needed: `docker compose down -v && pnpm db:start`
-
-> **Note:** To keep track of your database, you can run a Prisma Studio instance:
-```bash
-  docker compose exec app pnpm prisma studio 
-```
 
 ## Usage
 

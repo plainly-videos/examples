@@ -1,7 +1,7 @@
 "use server";
+import { auth, projectId, webhookBaseUrl } from "@/constants";
 import { revalidatePath, revalidateTag } from "next/cache";
 import prisma from "../../lib/prisma";
-import { auth, projectId, webhookBaseUrl } from "@/constants";
 
 export async function render(formData: FormData) {
   const rawFormData = {
@@ -26,6 +26,7 @@ export async function render(formData: FormData) {
     webhook: {
       url: `${webhookBaseUrl}/api/webhook`, // Webhook URL to handle render status updates
       onFailure: true, // Trigger webhook on failure
+      onInvalid: true, // Trigger webhook on invalid data
     },
   };
 
