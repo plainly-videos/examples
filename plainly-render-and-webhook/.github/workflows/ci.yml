@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  lint-format-build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mydatabase
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create .env.local
+        run: |
+          echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/mydatabase?schema=public" >> .env.local
+          echo "NEXT_PUBLIC_PLAINLY_API_KEY=placeholder" >> .env.local
+          echo "NEXT_PUBLIC_PLAINLY_PROJECT_ID=placeholder" >> .env.local
+          echo "NEXT_PUBLIC_WEBHOOK_PUBLIC_URL=http://localhost:3000" >> .env.local
+
+      - name: Biome check (lint + format)
+        run: pnpm exec biome check --reporter=github .
+
+      - name: Biome format verification
+        run: pnpm exec biome format --write=false .
+
+      - name: Build
+        run: pnpm build
