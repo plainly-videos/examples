@@ -10,11 +10,14 @@ import prisma from "../../../../lib/prisma";
  *   id: string,        // The render ID associated with the matchup
  *   output: string,    // The URL of the rendered video (optional)
  *   success: boolean   // Indicates whether the rendering was successful
+ *   error: { message: string, code: string } // Error details (optional)
  * }
  *
  * The endpoint updates the matchup status in the database based on the provided render ID.
- * If the rendering was successful, the status is set to "completed" and the video URL is updated.
- * Otherwise, the status is set to "failed".
+ * If the rendering was successful, payload returns `success: true`, and we can set the status to "completed" and update the video URL.
+ * If webhook options allow the delivery in case of a failed or invalid renders (by passing `onFailure: true` or `onInvalid: true`),
+ * the payload sent will be slightly different, as it will not contain the output information and error property will contain the error details,
+ * allowing for more granular handling of different render outcomes. In our case we will update the status to "failed".
  *
  * After updating the database, the cache for the homepage and the "matchup" tag is revalidated.
  *

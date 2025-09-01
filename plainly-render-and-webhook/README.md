@@ -59,8 +59,8 @@ This will generate a template with few parameters from layers.
 
 Update `.env.local` with your API key from [Plainly Settings](https://app.plainlyvideos.com/dashboard/user/settings/general) and the Project ID from the project you just uploaded.
 ```bash
-NEXT_PUBLIC_PLAINLY_API_KEY=your_plainly_api_key
-NEXT_PUBLIC_PLAINLY_PROJECT_ID=your_plainly_project_id
+PLAINLY_API_KEY=your_plainly_api_key
+PLAINLY_PROJECT_ID=your_plainly_project_id
 ```
 
 5. Start the development environment:

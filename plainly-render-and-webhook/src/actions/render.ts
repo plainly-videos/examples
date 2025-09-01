@@ -17,10 +17,8 @@ export async function render(formData: FormData) {
     // render parameters
     parameters: {
       plainlyEditTeam1: rawFormData.team1,
-      plainlyTEAM1: rawFormData.team1,
       plainlyEditLogo1: rawFormData.team1logo,
       plainlyEditTeam2: rawFormData.team2,
-      plainlyTEAM2: rawFormData.team2,
       plainlyEditLogo2: rawFormData.team2logo,
     },
     webhook: {
