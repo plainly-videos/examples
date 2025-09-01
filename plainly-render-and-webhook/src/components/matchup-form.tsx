@@ -5,6 +5,7 @@ import { render } from "@/actions/render";
 import { SubmitButton } from "./submit-button";
 import { TeamCombobox } from "./team-combobox";
 import { Label } from "./ui/label";
+import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 
 export default function MatchupForm() {
   const [data, setData] = useState({
@@ -13,21 +14,41 @@ export default function MatchupForm() {
     team2: "",
     team2logo: "",
   });
+  const [alert, setAlert] = useState<{
+    title: string;
+    description?: string;
+  }>();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("team1", data.team1);
-    formData.append("team1logo", data.team1logo);
-    formData.append("team2", data.team2);
-    formData.append("team2logo", data.team2logo);
+    setAlert(undefined);
 
-    await render(formData);
-    setData({ team1: "", team1logo: "", team2: "", team2logo: "" });
+    try {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("team1", data.team1);
+      formData.append("team1logo", data.team1logo);
+      formData.append("team2", data.team2);
+      formData.append("team2logo", data.team2logo);
+
+      await render(formData);
+      setData({ team1: "", team1logo: "", team2: "", team2logo: "" });
+    } catch (error) {
+      console.log(error);
+      setAlert({
+        title: "Failed to start render",
+        description: (error as Error).message,
+      });
+    }
   };
 
   return (
     <form className="grid gap-6" onSubmit={handleSubmit}>
+      {alert && (
+        <Alert variant="destructive">
+          <AlertTitle>{alert.title}</AlertTitle>
+          <AlertDescription>{alert.description}</AlertDescription>
+        </Alert>
+      )}
       <div className="flex flex-col gap-6">
         <div className="flex divide-x">
           <div className="grid gap-2 flex-1 pr-4">
