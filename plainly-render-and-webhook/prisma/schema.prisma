@@ -15,14 +15,15 @@ datasource db {
 }
 
 model Matchup {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  teamA     String
-  teamALogo String
-  teamB     String
-  teamBLogo String
-  status    String    @default("pending")
-  renderId  String    @unique
-  videoUrl  String?
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  teamA           String
+  teamALogo       String
+  teamB           String
+  teamBLogo       String
+  status          String    @default("pending")
+  renderId        String    @unique
+  videoUrl        String?
+  expirationDate  String?
 }

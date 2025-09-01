@@ -40,9 +40,6 @@ export async function createTunnel(
         throw new Error("Failed to get tunnel URL");
       }
 
-      // Test if tunnel is actually working
-      await testTunnel(tunnelUrl);
-
       return tunnelUrl;
     } catch (error) {
       console.error(`❌ Failed to create tunnel (attempt ${attempt}):`, error);
@@ -65,23 +62,6 @@ export async function createTunnel(
   }
 
   throw new Error("Failed to create tunnel");
-}
-
-async function testTunnel(url: string): Promise<void> {
-  try {
-    const response = await fetch(`${url}/api/config`, {
-      method: "GET",
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!response.ok) {
-      throw new Error(`Tunnel test failed: ${response.status}`);
-    }
-    console.log("✅ Tunnel connection verified");
-  } catch (_error) {
-    console.warn(
-      "⚠️ Could not verify tunnel connection (this is normal if the server is not running yet)",
-    );
-  }
 }
 
 export function getTunnelUrl(): string | null {

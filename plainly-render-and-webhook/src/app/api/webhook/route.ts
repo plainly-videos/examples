@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Here you can see the example webhook payloads
     // https://help.plainlyvideos.com/docs/user-guide/rendering/video-delivery#webhook-delivery
     const body = await request.json();
-    const { id, output, success } = body;
+    const { id, output, success, expirationDate } = body;
 
     // Update matchup in DB based on renderId
     await prisma.matchup.updateMany({
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       data: {
         status: success ? "completed" : "failed",
         videoUrl: output ?? null,
+        expirationDate: expirationDate ?? null,
       },
     });
 

@@ -27,23 +27,31 @@ async function startApp() {
       nextProcess = spawn("pnpm", ["dev"], {
         stdio: "inherit",
         env: updatedEnv,
+        detached: process.platform !== "win32",
       });
     } else {
       console.log("\n🔄 Rebuilding Next.js with tunnel URL...\n");
 
-      nextProcess = spawn("pnpm", ["build"], {
+      const buildProcess = spawn("pnpm", ["build"], {
         stdio: "inherit",
         env: updatedEnv,
+        detached: process.platform !== "win32",
       });
 
       await new Promise((resolve, reject) => {
-        nextProcess.on("exit", (code) => {
+        buildProcess.on("exit", (code) => {
           if (code === 0) {
             resolve(code);
           } else {
             reject(new Error(`Build failed with code ${code}`));
           }
         });
+      });
+
+      nextProcess = spawn("pnpm", ["start"], {
+        stdio: "inherit",
+        env: updatedEnv,
+        detached: process.platform !== "win32",
       });
     }
 

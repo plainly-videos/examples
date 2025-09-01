@@ -43,7 +43,7 @@ By working through this example, you'll understand how to:
 
 3. Upload an example project to Plainly:
 
-- Download the example project from [here](./Sports%20Matchup.zip).
+- Download the example project from [here](./after-effects/Sports%20Matchup.zip).
 - Go to [Upload form](https://app.plainlyvideos.com/dashboard/projects/create) and upload the project.
 - Once the upload is done, auto-generate a template with prefix option:
   - Set the target composition to `editRender`
@@ -76,25 +76,21 @@ This command will:
 - Update your `.env.local` with the tunnel URL
 - Start the Next.js development server
 
-The output will show your unique tunnel URL:
+The output will show your unique tunnel URL, and app started message:
 ```bash
-  🌐 Tunnel URL: https://abc123.loca.lt
-  📨 Webhook URL: https://abc123.loca.lt/api/webhook
+🌐 Tunnel URL: https://abc123.loca.lt
+📨 Webhook URL: https://abc123.loca.lt/api/webhook
+
+  ▲ Next.js 15.5.0
+  - Local:        http://localhost:3000
+  - Network:      http://192.168.0.109:3000
+  - Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1376ms
 ```
 
 Each time you run this command, you'll get a fresh, unique tunnel URL that won't conflict with other developers.
-
-## Troubleshooting
-
-### Tunnel Issues
-- The auto-tunnel script includes retry logic for reliability
-
-### Webhook Issues
-- Check the webhook status indicator in the UI
-- Test your webhook endpoint at: `{your-tunnel-url}/api/webhook`
-
-### Database Issues
-- Ensure PostgreSQL is running: `pnpm db:start`
 
 ## Usage
 

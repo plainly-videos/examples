@@ -1,9 +1,9 @@
 "use client";
 
+import type { Matchup } from "@/app/generated/prisma";
+import { cn } from "@/lib/utils";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "../ui/badge";
-import { cn } from "@/lib/utils";
-import type { Matchup } from "@/app/generated/prisma";
 
 export const columns: ColumnDef<Matchup>[] = [
   {
@@ -47,18 +47,27 @@ export const columns: ColumnDef<Matchup>[] = [
   {
     accessorKey: "videoUrl",
     header: "Video",
-    cell: ({ row }) =>
-      row.original.videoUrl ? (
+    cell: ({ row }) => {
+      const videoUrl = row.original.videoUrl;
+      const expirationDate = row.original.expirationDate;
+
+      if (!videoUrl) {
+        return "N/A";
+      }
+      if (expirationDate && new Date(expirationDate) < new Date()) {
+        return "Expired";
+      }
+
+      return (
         <a
-          href={row.original.videoUrl}
+          href={videoUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
         >
           Preview
         </a>
-      ) : (
-        "N/A"
-      ),
+      );
+    },
   },
 ];
