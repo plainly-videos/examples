@@ -1,11 +1,11 @@
 services:
   db:
     image: postgres:17-alpine
-    container_name: plainly_render_webhook
+    container_name: plainly_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      POSTGRES_DB: plainly_render_webhook
     ports:
       - "5432:5432"
     volumes:
