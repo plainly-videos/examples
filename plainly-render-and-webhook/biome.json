@@ -14,7 +14,8 @@
       "!dist",
       "!build",
       "!prisma/lib",
-      "!prisma/migrations"
+      "!prisma/migrations",
+      "!.pnpm-store"
     ]
   },
   "formatter": {
