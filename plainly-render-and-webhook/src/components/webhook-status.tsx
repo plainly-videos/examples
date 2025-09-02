@@ -5,8 +5,8 @@ import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader } from "./ui/card";
 
 interface ConfigStatus {
-  webhookUrl: string | null;
-  webhookEndpoint: string | null;
+  publicUrl: string | null;
+  publicEndpoint: string | null;
   isConfigured: boolean;
 }
 
@@ -31,12 +31,12 @@ export default function WebhookStatus() {
         </Badge>
       </CardHeader>
       <CardContent>
-        {status.isConfigured && status.webhookEndpoint && (
+        {status.isConfigured && status.publicEndpoint && (
           <div className="text-sm">
             <p className="max-w-prose">
               Endpoint:{" "}
               <code className="p-2 text-muted-foreground bg-background rounded">
-                {status.webhookEndpoint}
+                {status.publicEndpoint}
               </code>
             </p>
           </div>

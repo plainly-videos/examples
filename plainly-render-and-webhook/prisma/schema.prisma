@@ -23,7 +23,6 @@ model Matchup {
   teamB           String
   teamBLogo       String
   status          String    @default("pending")
-  customData      String
   videoUrl        String?
   expirationDate  String?
 }

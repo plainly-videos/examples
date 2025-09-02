@@ -3,13 +3,17 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { closeTunnel, createTunnel } from "../lib/tunnel";
 
-const PORT = 3000;
+import { loadEnvConfig } from "@next/env";
+
+const projectDir = process.cwd();
+const env = loadEnvConfig(projectDir);
+const PORT = env.combinedEnv.PORT || 3000;
 
 async function startApp() {
   console.log("🚀 Starting Plainly app with automatic tunnel setup...\n");
 
   // Create tunnel first
-  const tunnelUrl = await createTunnel(PORT);
+  const tunnelUrl = await createTunnel(Number(PORT));
 
   console.log("\n🌐 Tunnel URL:", tunnelUrl);
   console.log("📨 Webhook URL:", `${tunnelUrl}/api/webhook`);
@@ -17,7 +21,7 @@ async function startApp() {
   // Update the environment with the new webhook URL
   const updatedEnv = {
     ...process.env,
-    WEBHOOK_PUBLIC_URL: tunnelUrl,
+    PUBLIC_URL: tunnelUrl,
   };
 
   let nextProcess: ChildProcess;
@@ -58,10 +62,7 @@ async function startApp() {
     const exitPromise = new Promise<void>((resolve) => {
       nextProcess?.on("exit", (code, signal) => {
         console.log(`\n💻 Next.js exited with code ${code}, signal ${signal}`);
-        // Treat SIGTERM or SIGINT as normal exit
-        if (signal === "SIGTERM" || signal === "SIGINT") resolve();
-        else if (code === 0) resolve();
-        else resolve(); // ignore ELIFECYCLE
+        resolve();
       });
     });
 
@@ -69,9 +70,9 @@ async function startApp() {
       console.log("\n🔄 Shutting down...");
       if (nextProcess && !nextProcess.killed) {
         try {
-          nextProcess.kill("SIGTERM");
+          nextProcess.kill();
         } catch (err) {
-          console.warn("Failed to kill nextProcess:", err);
+          console.warn("❌ Failed to kill nextProcess:", err);
         }
       }
       await closeTunnel();

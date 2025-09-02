@@ -1,8 +1,7 @@
 "use server";
-import { auth, projectId, webhookBaseUrl } from "@/constants";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { auth, projectId, publicUrl } from "@/constants";
+import { revalidatePath } from "next/cache";
 import prisma from "../../lib/prisma";
-import { randomUUID } from "node:crypto";
 
 export async function render(formData: FormData) {
   const rawFormData = {
@@ -12,17 +11,14 @@ export async function render(formData: FormData) {
     team2logo: formData.get("team2logo")?.toString() || "",
   };
 
-  const customData = randomUUID();
-
   // Save matchup details to the database with an initial status of 'pending'
-  await prisma.matchup.create({
+  const { id: matchupId } = await prisma.matchup.create({
     data: {
       teamA: rawFormData.team1,
       teamB: rawFormData.team2,
       teamALogo: rawFormData.team1logo,
       teamBLogo: rawFormData.team2logo,
       status: "pending", // Initial status of the matchup
-      customData,
     },
   });
 
@@ -37,8 +33,8 @@ export async function render(formData: FormData) {
       plainlyEditLogo2: rawFormData.team2logo,
     },
     webhook: {
-      url: `${webhookBaseUrl}/api/webhook`, // Webhook URL to handle render status updates
-      passthrough: customData, // Custom data to identify the render
+      url: `${publicUrl}/api/webhook`, // Webhook URL to handle render status updates
+      passthrough: matchupId, // Send matchupId as passthrough to identify the render
       onFailure: true, // Trigger webhook on failure
       onInvalid: true, // Trigger webhook on invalid data
     },
@@ -57,16 +53,14 @@ export async function render(formData: FormData) {
   // Throw an error if the API request fails
   if (!res.ok) {
     await prisma.matchup.updateMany({
-      where: { customData },
+      where: { id: matchupId },
       data: { status: "failed" },
     });
 
-    revalidatePath("/");
-    revalidateTag("matchup");
+    revalidatePath("/", "layout");
     throw new Error(`Error: ${res.status} ${res.statusText}`);
   }
 
   // Revalidate the homepage and matchup tag to update the UI
-  revalidatePath("/");
-  revalidateTag("matchup");
+  revalidatePath("/", "layout");
 }
