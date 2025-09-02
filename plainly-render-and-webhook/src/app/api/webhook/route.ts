@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { passthrough, output, success, expirationDate } = body;
 
-    // Update matchup in DB based on customData
+    // Update matchup in DB based on the passthrough data
     await prisma.matchup.updateMany({
-      where: { customData: passthrough },
+      where: { id: Number(passthrough) },
       data: {
         status: success ? "completed" : "failed",
         videoUrl: output ?? null,
@@ -41,8 +41,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Revalidate cache for the homepage and "matchup" tag
-    revalidatePath("/");
-    revalidateTag("matchup");
+    revalidatePath("/", "layout");
 
     return NextResponse.json({ message: "Webhook received" }, { status: 200 });
   } catch (error) {

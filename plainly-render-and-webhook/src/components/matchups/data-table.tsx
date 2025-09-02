@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -16,20 +15,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-}
+import useSWR from "swr";
+import { columns } from "./columns";
+import { DataTablePlaceholder } from "./data-table-placeholder";
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export function DataTable() {
+  const { data, error, isLoading } = useSWR("/api/matchups", fetcher, {});
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  if (isLoading) return <DataTablePlaceholder />;
 
   return (
     <div className="overflow-hidden rounded-md border w-full lg:min-w-3xl">
@@ -66,6 +67,12 @@ export function DataTable<TData, TValue>({
                 ))}
               </TableRow>
             ))
+          ) : error ? (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                Failed to load matchups
+              </TableCell>
+            </TableRow>
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
