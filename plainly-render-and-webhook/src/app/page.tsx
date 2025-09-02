@@ -23,9 +23,16 @@ export default async function Home() {
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <div className="bg-black dark:bg-black p-4 rounded-md">
+        <div className="w-full flex items-center justify-center" id="logo-card">
           <Image
-            src="/plainly_logo.svg"
+            src="/plainly logo black.png"
+            alt="Plainly Videos logo"
+            width={160}
+            height={32}
+            priority
+          />
+          <Image
+            src="/plainly logo white.png"
             alt="Plainly Videos logo"
             width={160}
             height={32}

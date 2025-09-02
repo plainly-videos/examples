@@ -27,7 +27,7 @@ async function startApp() {
       nextProcess = spawn("pnpm", ["dev"], {
         stdio: "inherit",
         env: updatedEnv,
-        detached: process.platform !== "win32",
+        detached: true,
       });
     } else {
       console.log("\n🔄 Rebuilding Next.js with tunnel URL...\n");
@@ -35,7 +35,7 @@ async function startApp() {
       const buildProcess = spawn("pnpm", ["build"], {
         stdio: "inherit",
         env: updatedEnv,
-        detached: process.platform !== "win32",
+        detached: true,
       });
 
       await new Promise((resolve, reject) => {
@@ -51,14 +51,24 @@ async function startApp() {
       nextProcess = spawn("pnpm", ["start"], {
         stdio: "inherit",
         env: updatedEnv,
-        detached: process.platform !== "win32",
+        detached: true,
       });
     }
 
     // Handle process termination
     const cleanup = async () => {
       console.log("\n🔄 Shutting down...");
-      nextProcess.kill();
+
+      if (nextProcess) {
+        if (process.platform === "win32") {
+          // Windows doesn’t support negative PID, so use taskkill
+          spawn("taskkill", ["/pid", String(nextProcess.pid), "/f", "/t"]);
+        } else {
+          // Kill entire process group
+          if (nextProcess.pid) process.kill(-nextProcess.pid);
+        }
+      }
+
       await closeTunnel();
       process.exit(0);
     };
