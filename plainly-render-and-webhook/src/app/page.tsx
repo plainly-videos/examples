@@ -1,4 +1,7 @@
 import MatchupForm from "@/components/matchup-form";
+import { columns } from "@/components/matchups/columns";
+import { DataTable } from "@/components/matchups/data-table";
+import { ModeToggle } from "@/components/mode-toggle";
 import {
   Card,
   CardContent,
@@ -6,12 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Image from "next/image";
-import { DataTable } from "@/components/matchups/data-table";
 import WebhookStatus from "@/components/webhook-status";
-import { ModeToggle } from "@/components/mode-toggle";
+import Image from "next/image";
+import prisma from "../../lib/prisma";
+import RefreshButton from "@/components/refresh-button";
 
 export default async function Home() {
+  const data = await prisma.matchup.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  const refreshDisabled = data.every((item) => item.status !== "pending");
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -40,7 +49,10 @@ export default async function Home() {
             <MatchupForm />
           </CardContent>
         </Card>
-        <DataTable />
+        <div className="space-y-2">
+          <RefreshButton disabled={refreshDisabled} />
+          <DataTable columns={columns} data={data} />
+        </div>
         <WebhookStatus />
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">

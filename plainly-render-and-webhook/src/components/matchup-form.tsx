@@ -18,9 +18,11 @@ export default function MatchupForm() {
     title: string;
     description?: string;
   }>();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     setAlert(undefined);
+    setLoading(true);
 
     try {
       e.preventDefault();
@@ -38,6 +40,8 @@ export default function MatchupForm() {
         title: "Failed to start render",
         description: (error as Error).message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,7 +75,7 @@ export default function MatchupForm() {
           </div>
         </div>
       </div>
-      <SubmitButton disabled={!data.team1 || !data.team2} />
+      <SubmitButton disabled={!data.team1 || !data.team2} loading={loading} />
     </form>
   );
 }
