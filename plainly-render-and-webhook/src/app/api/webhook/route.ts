@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
@@ -39,9 +38,6 @@ export async function POST(request: NextRequest) {
         expirationDate: expirationDate ?? null,
       },
     });
-
-    // Revalidate cache for the homepage and "matchup" tag
-    revalidatePath("/", "layout");
 
     return NextResponse.json({ message: "Webhook received" }, { status: 200 });
   } catch (error) {

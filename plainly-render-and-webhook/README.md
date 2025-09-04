@@ -26,6 +26,7 @@ By working through this example, you'll understand how to:
 - [Node.js](https://nodejs.org/) (v18 or later)
 - [pnpm](https://pnpm.io/) package manager
 - [Docker](https://www.docker.com/) for running a local PostgreSQL instance
+- [Docker Compose](https://docs.docker.com/compose/)
 
 ## Getting Started
 
