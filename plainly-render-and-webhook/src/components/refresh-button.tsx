@@ -11,7 +11,7 @@ export default function RefreshButton({ disabled }: { disabled?: boolean }) {
     <button
       type="button"
       className={`${
-        isPending || disabled ? "cursor-not-allowed" : ""
+        isPending || disabled ? "cursor-not-allowed" : "cursor-pointer"
       } text-sm text-muted-foreground hover:text-primary`}
       disabled={isPending || disabled}
       onClick={() => startTransition(() => router.refresh())}
