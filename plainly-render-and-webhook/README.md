@@ -85,8 +85,8 @@ By working through this example, you'll understand how to:
 
 - Open app by visiting http://localhost:3000.
 - Create a new matchup by filling out the form with two teams from a dropdown.
-- Table below the form displays all created matchups.
 - Once a matchup is created, a video rendering job is queued in Plainly.
+- Table below the form displays all created match-ups.
 - When the video is ready, a webhook from Plainly updates the database and the video appears in the table. Hit refresh in order to update the list.
 
 ## Useful commands
