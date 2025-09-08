@@ -11,25 +11,16 @@ export async function render(formData: FormData) {
     team2logo: formData.get("team2logo")?.toString() || "",
   };
 
-  let matchupId: number;
-  try {
-    // Save matchup details to the database with an initial status of 'pending'
-    const { id } = await prisma.matchup.create({
-      data: {
-        teamA: rawFormData.team1,
-        teamB: rawFormData.team2,
-        teamALogo: rawFormData.team1logo,
-        teamBLogo: rawFormData.team2logo,
-        status: "pending", // Initial status of the matchup
-      },
-    });
-
-    matchupId = id;
-  } catch (error) {
-    throw new Error("Failed to create matchup in the database", {
-      cause: error,
-    });
-  }
+  // Save matchup details to the database with an initial status of 'pending'
+  const { id: matchupId } = await prisma.matchup.create({
+    data: {
+      teamA: rawFormData.team1,
+      teamB: rawFormData.team2,
+      teamALogo: rawFormData.team1logo,
+      teamBLogo: rawFormData.team2logo,
+      status: "pending", // Initial status of the matchup
+    },
+  });
 
   // Construct the request body for the Plainly Videos API
   const body = {
@@ -61,16 +52,10 @@ export async function render(formData: FormData) {
 
   // Throw an error if the API request fails
   if (!res.ok) {
-    try {
-      await prisma.matchup.updateMany({
-        where: { id: matchupId },
-        data: { status: "failed" },
-      });
-    } catch (error) {
-      throw new Error("Failed to update matchup status in the database", {
-        cause: error,
-      });
-    }
+    await prisma.matchup.updateMany({
+      where: { id: matchupId },
+      data: { status: "failed" },
+    });
 
     revalidatePath("/", "layout");
     throw new Error(`Error: ${res.status} ${res.statusText}`);

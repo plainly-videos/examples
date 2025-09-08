@@ -1,5 +1,4 @@
 import Image from "next/image";
-import type { Matchup } from "@/app/generated/prisma";
 import MatchupForm from "@/components/matchup-form";
 import { columns } from "@/components/matchups/columns";
 import { DataTable } from "@/components/matchups/data-table";
@@ -14,14 +13,12 @@ import {
 import WebhookStatus from "@/components/webhook-status";
 import prisma from "../../lib/prisma";
 
-export default async function Home() {
-  let data: Matchup[] = [];
+export const dynamic = "force-dynamic";
 
-  try {
-    data = await prisma.matchup.findMany({ orderBy: { createdAt: "desc" } });
-  } catch (error) {
-    console.error("Failed to fetch matchups:", error);
-  }
+export default async function Home() {
+  const data = await prisma.matchup.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
