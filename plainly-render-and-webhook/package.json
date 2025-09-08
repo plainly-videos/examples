@@ -8,7 +8,7 @@
     "dev": "next dev",
     "tunnel": "tsx scripts/start-with-tunnel.ts",
     "dev:full": "pnpm db:start && pnpm prisma:generate && pnpm prisma:push && NODE_ENV=development pnpm tunnel",
-    "build": "pnpm prisma:generate && pnpm prisma:push && next build",
+    "build": "pnpm prisma:generate && next build",
     "start": "next start",
     "start:full": "pnpm db:start && pnpm prisma:generate && pnpm prisma:push && NODE_ENV=production pnpm tunnel",
     "lint": "biome check",
