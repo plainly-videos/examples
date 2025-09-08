@@ -9,21 +9,25 @@ jobs:
   build-plainly-render-and-webhook:
     name: Build plainly-render-and-webhook
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plainly-render-and-webhook
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+          cache-dependency-path: plainly-render-and-webhook/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -32,7 +36,7 @@ jobs:
         run: pnpm exec biome check --reporter=github .
 
       - name: Biome format verification
-        run: pnpm exec biome format --write=false .
+        run: pnpm exec biome format .
 
       - name: Build
         run: pnpm build
