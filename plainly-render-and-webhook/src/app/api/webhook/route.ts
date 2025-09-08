@@ -30,14 +30,20 @@ export async function POST(request: NextRequest) {
     const { passthrough, output, success, expirationDate } = body;
 
     // Update matchup in DB based on the passthrough data
-    await prisma.matchup.updateMany({
-      where: { id: Number(passthrough) },
-      data: {
-        status: success ? "completed" : "failed",
-        videoUrl: output ?? null,
-        expirationDate: expirationDate ?? null,
-      },
-    });
+    try {
+      await prisma.matchup.updateMany({
+        where: { id: Number(passthrough) },
+        data: {
+          status: success ? "completed" : "failed",
+          videoUrl: output ?? null,
+          expirationDate: expirationDate ?? null,
+        },
+      });
+    } catch (error) {
+      throw new Error("Failed to update matchup in the database", {
+        cause: error,
+      });
+    }
 
     return NextResponse.json({ message: "Webhook received" }, { status: 200 });
   } catch (error) {
