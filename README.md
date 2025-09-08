@@ -1,6 +1,6 @@
 # Plainly Videos Examples
 
-Welcome to the [Plainly Videos]((https://www.plainlyvideos.com)) examples repository. This collection provides practical code samples and integration patterns to help you get started with the [Plainly Videos REST API](https://app.plainlyvideos.com/api-reference.html).
+Welcome to the [Plainly Videos](https://www.plainlyvideos.com) examples repository. This collection provides practical code samples and integration patterns to help you get started with the [Plainly Videos REST API](https://app.plainlyvideos.com/api-reference.html).
 
 ## What is Plainly Videos?
 
@@ -10,7 +10,7 @@ Plainly Videos is a cloud-based video rendering platform that enables developers
 
 - **Developers** looking to integrate video generation into their applications and workflows.
 - **Product teams** wanting to add automated video creation features.
-- **Anyone** interested in learning how to work with the Plainly Videos API.s
+- **Anyone** interested in learning how to work with the Plainly Videos API.
 
 ## Documentation & Resources
 

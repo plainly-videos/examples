@@ -93,5 +93,5 @@ By working through this example, you'll understand how to:
 
  - `pnpm dev:full` - Starts the app in development mode with the webhook tunnel setup.
  - `pnpm start:full` - Builds and starts the app in preview mode with the webhook tunnel setup.
- - `pnpm db:stop` - Stops POSTGREsql instance by executing a docker-compose stop.
- - `pnpm db:remove` - Stops POSTGREsql instance and removes any data in the database.
+ - `pnpm db:stop` - Stops PostgreSQL instance by executing a docker-compose stop.
+ - `pnpm db:remove` - Stops PostgreSQL instance and removes any data in the database.
