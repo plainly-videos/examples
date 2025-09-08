@@ -8,6 +8,8 @@ on:
 jobs:
   build-plainly-render-and-webhook:
     name: Build plainly-render-and-webhook
+    env:
+      DATABASE_URL: postgres://postgres:password@localhost:5432/plainly_render_webhook
     runs-on: ubuntu-latest
     defaults:
       run:
