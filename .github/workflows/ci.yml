@@ -36,7 +36,7 @@ jobs:
         run: pnpm exec biome check --reporter=github .
 
       - name: Biome format verification
-        run: pnpm exec biome format --write=false .
+        run: pnpm exec biome format .
 
       - name: Build
         run: pnpm build
