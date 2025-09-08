@@ -1,5 +1,5 @@
-import { publicUrl } from "@/constants";
 import { NextResponse } from "next/server";
+import { publicUrl } from "@/constants";
 
 export async function GET() {
   return NextResponse.json({

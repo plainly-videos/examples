@@ -1,9 +1,8 @@
 #!/usr/bin/env tsx
 
 import { type ChildProcess, spawn } from "node:child_process";
-import { closeTunnel, createTunnel } from "../lib/tunnel";
-
 import { loadEnvConfig } from "@next/env";
+import { closeTunnel, createTunnel } from "../lib/tunnel";
 
 const projectDir = process.cwd();
 const env = loadEnvConfig(projectDir);

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { render } from "@/actions/render";
 import { SubmitButton } from "./submit-button";
 import { TeamCombobox } from "./team-combobox";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Label } from "./ui/label";
-import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 
 export default function MatchupForm() {
   const [data, setData] = useState({

@@ -1,8 +1,9 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
 import type { Matchup } from "@/app/generated/prisma";
 import { cn } from "@/lib/utils";
-import type { ColumnDef } from "@tanstack/react-table";
+import RefreshButton from "../refresh-button";
 import { Badge } from "../ui/badge";
 
 export const columns: ColumnDef<Matchup>[] = [
@@ -52,6 +53,10 @@ export const columns: ColumnDef<Matchup>[] = [
       const expirationDate = row.original.expirationDate;
 
       if (!videoUrl) {
+        if (row.original.status === "pending") {
+          return <RefreshButton />;
+        }
+
         return "N/A";
       }
       if (expirationDate && new Date(expirationDate) < new Date()) {
