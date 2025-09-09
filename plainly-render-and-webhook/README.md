@@ -52,8 +52,14 @@ By working through this example, you'll understand how to:
     ```
     Update `.env.local` with your API key from [Plainly settings](https://app.plainlyvideos.com/dashboard/user/settings/general) and the project `ID` from the project you just uploaded.
     ```bash
-    PLAINLY_API_KEY=your_plainly_api_key
-    PLAINLY_PROJECT_ID=your_plainly_project_id
+      # DB connection string, update if you change postgres settings in docker-compose
+      DATABASE_URL=postgres://postgres:password@localhost:5432/plainly_render_webhook
+
+      # Plainly API
+      PLAINLY_API_KEY=your_plainly_api_key
+
+      # Plainly Project ID
+      PLAINLY_PROJECT_ID=your_plainly_project_id
     ```
 5. Start the development environment:
 
@@ -61,12 +67,13 @@ By working through this example, you'll understand how to:
       pnpm dev:full
     ```
     This command will:
+    - Start a PostgreSQL database in a Docker container
     - Generate and push Prisma schema
-    - Create a unique tunnel URL automatically
-    - Update your `.env.local` with the tunnel URL
+    - Create a unique `tunnel` URL to expose your local server for webhook handling
+    - Update your `.env.local` with the `tunnel` URL
     - Start the Next.js development server
 
-    The output will show your unique tunnel URL, and app started message:
+    The output will show your unique `tunnel` URL, and app started message:
 
     ```bash
     🌐 Tunnel URL: https://abc123.loca.lt
@@ -83,11 +90,94 @@ By working through this example, you'll understand how to:
 
 ## Usage
 
-- Open app by visiting http://localhost:3000.
-- Create a new matchup by filling out the form with two teams from a dropdown.
-- Once a matchup is created, a video rendering job is queued in Plainly.
-- Table below the form displays all created match-ups.
-- When the video is ready, a webhook from Plainly updates the database and the video appears in the table. Hit refresh in order to update the list.
+Open your browser and navigate to [http://localhost:3000](http://localhost:3000) to access the app. You should see a simple interface where you can select two teams and generate a matchup video, and your Webhook status should be `configured` with the `tunnel` URL.
+
+Application will allow you to create a new matchup by filling out a simple form. Table below the form will show all the match ups created so far, along with their current status and a preview of the rendered video once it's complete.
+
+### Create a new matchup video
+
+To create a new matchup video, select two teams from the dropdown menus and click on the **Create Matchup** button, which will save the new matchup in database, from which we will save a `matchupId` for later use in the webhook handling.
+
+```ts
+  // ./src/actions/renders.ts
+  // Save matchup details to the database with an initial status of 'pending'
+  const { id: matchupId } = await prisma.matchup.create({
+    data: {
+      teamA: rawFormData.team1,
+      teamB: rawFormData.team2,
+      teamALogo: rawFormData.team1logo,
+      teamBLogo: rawFormData.team2logo,
+      status: "pending", // Initial status of the matchup
+    },
+  });
+```
+
+This form will also initiate a video render request to the Plainly Videos API. Besides the render parameters, we also include a `webhook` object in the request body to specify where to send status updates. Along with the `webhookUrl`, we also send the `matchupId` as `passthrough` data, so we can identify which matchup the webhook notification belongs to, and set `onFailure` and `onInvalid` to `true` to receive notifications in case the render fails, or the provided data is invalid.
+
+```ts
+  // ./src/actions/renders.ts
+  // Construct the request body for the Plainly Videos API
+  const body = {
+    projectId, // Project ID for the Plainly Videos project
+    parameters: { // render parameters
+      plainlyEditTeam1: rawFormData.team1,
+      plainlyEditLogo1: rawFormData.team1logo,
+      plainlyEditTeam2: rawFormData.team2,
+      plainlyEditLogo2: rawFormData.team2logo,
+    },
+    webhook: {
+      url: `${publicUrl}/api/webhook`, // Webhook URL to handle render status updates
+      passthrough: matchupId, // Send matchupId as passthrough to identify the render
+      onFailure: true, // Trigger webhook on failure
+      onInvalid: true, // Trigger webhook on invalid data
+    },
+  };
+
+  // Send a POST request to the Plainly Videos API to initiate a render
+  const res = await fetch("https://api.plainlyvideos.com/api/v2/renders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Basic ${auth}`, // Basic authentication header
+    },
+    body: JSON.stringify(body),
+  });
+```
+
+### Webhook handling
+
+When the video rendering is complete, Plainly Videos will send a webhook notification to the specified URL. The app has an API route set up to handle these webhook requests and update the corresponding matchup status in the database. We will find the matchup by `matchupId` that is returned through `passthrough` from the webhook body. If the render was successful, we will receive `success: true` along with the `output` URL of the rendered video. If the render failed, we will receive the `error` details instead. In case of a successful render, we will update the matchup status to `completed` and store the video URL, and `expirationDate`. If the render failed, we will update the status to `failed`.
+
+```ts
+// ./src/app/api/webhook/route.ts
+export async function POST(request: NextRequest) {
+  try {
+    // Here you can see the example webhook payloads
+    // https://help.plainlyvideos.com/docs/user-guide/rendering/video-delivery#webhook-delivery
+    const body = await request.json();
+    const { passthrough, output, success, expirationDate } = body;
+
+    // Update matchup in DB based on the passthrough data
+    await prisma.matchup.updateMany({
+      where: { id: Number(passthrough) },
+      data: {
+        status: success ? "completed" : "failed",
+        videoUrl: output ?? null,
+        expirationDate: expirationDate ?? null,
+      },
+    });
+
+    return NextResponse.json({ message: "Webhook received" }, { status: 200 });
+  } catch (error) {
+    // Log the error for debugging purposes
+    console.error("Webhook error:", error);
+
+    // Return a 500 status code to indicate a server-side error
+    // This will force Plainly to retry the webhook delivery
+    return NextResponse.json({ message: "Error processing webhook" }, { status: 500 });
+  }
+}
+```
 
 ## Useful commands
 
