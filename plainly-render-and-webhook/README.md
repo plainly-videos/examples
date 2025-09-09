@@ -46,7 +46,10 @@ By working through this example, you'll understand how to:
       - Click on "Generate"
       - This will generate a template with few parameters from layers.
 
-      ![Auto generate template](./.assets/auto-generate-template.png)
+
+<p align="center">
+  <img src=".assets/auto-generate-template.png" alt="My Image" width="500" />
+</p>
 
 4. Set up environment variables:
 
@@ -97,7 +100,9 @@ Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
 
 Application will allow you to create a new matchup by filling out a simple form. Table below the form will show all the match ups created so far, along with their current status and a preview of the rendered video once it's complete.
 
-![App screenshot](./.assets/app.png)
+<p align="center">
+  <img src=".assets/app.png" alt="My Image" width="500" />
+</p>
 
 ### Create a new matchup video
 
