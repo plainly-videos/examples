@@ -168,7 +168,7 @@ When the video rendering is complete, Plainly Videos will send a webhook notific
 
 If the render was successful, we will receive `success: true` along with the `output` URL and `expirationDate` of the rendered video. If the render failed, we will receive the `error` details instead. Based on the status, we'll update the database entry accordingly.
  
-In order to know what entry in the database needs to be updated, we'll use `passthrough` value from the webhook body. It should point to the `matchupId` that we sent the render request originally.
+In order to know what entry in the database needs to be updated, we'll use `passthrough` value from the webhook body. It should point to the `matchupId` that we sent previously in the render request.
 
 ```ts
 // ./src/app/api/webhook/route.ts
