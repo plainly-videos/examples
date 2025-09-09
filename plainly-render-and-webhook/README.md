@@ -16,8 +16,8 @@ By working through this example, you'll understand how to:
 
 - **🎬 Video generation**: Integrate with Plainly Videos API to programmatically create videos.
 - **🔄 Webhook handling**: Set up an endpoint to receive and process webhook notifications, in order to track video render jobs and their statuses.
-- **🌐 Development Workflow**: Use tunneling for local webhook development and testing.
-- **🏗️ Full-stack Architecture**: Build a complete app with form handling, API routes, and data persistence.
+- **🌐 Development workflow**: Use tunneling for local webhook development and testing.
+- **🏗️ Full-stack architecture**: Build a complete app with form handling, API routes, and data persistence.
 
 ## Prerequisites
 
@@ -30,13 +30,13 @@ By working through this example, you'll understand how to:
 1. Clone the repository:
 
     ```bash
-      git clone https://github.com/plainly-videos/examples.git
-      cd plainly-render-and-webhook
+    git clone https://github.com/plainly-videos/examples.git
+    cd plainly-render-and-webhook
     ```
 2. Install dependencies:
 
     ```bash
-      pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile
     ```
 3. Upload the After Effects project used in this example to Plainly:
    - Download the example project from [here](./after-effects/Sports%20Matchup.zip).
@@ -47,36 +47,38 @@ By working through this example, you'll understand how to:
       - This will generate a template with few parameters from layers.
 
 
-<p align="center">
-  <img src=".assets/auto-generate-template.png" alt="My Image" width="500" />
-</p>
+   <p align="center">
+     <img src=".assets/auto-generate-template.png" alt="Plainly auto-generate template" width="500" />
+   </p>
 
 4. Set up environment variables:
 
     ```bash
-      cp .env.example .env.local
+    cp .env.example .env.local
     ```
+
     Update `.env.local` with your API key from [Plainly settings](https://app.plainlyvideos.com/dashboard/user/settings/general) and the project `ID` from the project you just uploaded.
-    ```bash
-      # DB connection string, update if you change postgres settings in docker-compose
-      DATABASE_URL=postgres://postgres:password@localhost:5432/plainly_render_webhook
+    
+    ```properties
+    # DB connection string, update if you change postgres settings in docker-compose
+    DATABASE_URL=postgres://postgres:password@localhost:5432/plainly_render_webhook
 
-      # Plainly API
-      PLAINLY_API_KEY=your_plainly_api_key
+    # Plainly API
+    PLAINLY_API_KEY=your_plainly_api_key
 
-      # Plainly Project ID
-      PLAINLY_PROJECT_ID=your_plainly_project_id
+    # Plainly Project ID
+    PLAINLY_PROJECT_ID=your_plainly_project_id
     ```
 5. Start the development environment:
 
     ```bash
-      pnpm dev:full
+    pnpm dev:full
     ```
+
     This command will:
     - Start a PostgreSQL database in a Docker container
     - Generate and push Prisma schema
     - Create a unique `tunnel` URL to expose your local server for webhook handling
-    - Update your `.env.local` with the `tunnel` URL
     - Start the Next.js development server
 
     The output will show your unique `tunnel` URL, and app started message:
@@ -96,17 +98,19 @@ By working through this example, you'll understand how to:
 
 ## Usage
 
-Open your browser and navigate to [http://localhost:3000](http://localhost:3000) to access the app. You should see a simple interface where you can select two teams and generate a matchup video, and your Webhook status should be `configured` with the `tunnel` URL.
+Open your browser and navigate to http://localhost:3000 to access the app. You should see a simple form where you can select two teams and generate a matchup video.
 
-Application will allow you to create a new matchup by filling out a simple form. Table below the form will show all the match ups created so far, along with their current status and a preview of the rendered video once it's complete.
+A table below the form will show all the match ups created so far, along with their current status and a preview of the rendered video once it's complete. 
+
+At the bottom, your Webhook status should be set to `configured` with the `tunnel` URL.
 
 <p align="center">
-  <img src=".assets/app.png" alt="My Image" width="500" />
+  <img src=".assets/app.png" alt="Plainly render and webhook example UI" width="500" />
 </p>
 
 ### Create a new matchup video
 
-To create a new matchup video, select two teams from the dropdown menus and click on the **Create Matchup** button, which will save the new matchup in database, from which we will save a `matchupId` for later use in the webhook handling.
+When a new matchup video is created, it will be saved in the PostgreSQL database first. The `id` of a new row will be referenced in a `matchupId` variable for later use in the webhook handling.
 
 ```ts
   // ./src/actions/renders.ts
@@ -122,7 +126,11 @@ To create a new matchup video, select two teams from the dropdown menus and clic
   });
 ```
 
-This form will also initiate a video render request to the Plainly Videos API. Besides the render parameters, we also include a `webhook` object in the request body to specify where to send status updates. Along with the `webhookUrl`, we also send the `matchupId` as `passthrough` data, so we can identify which matchup the webhook notification belongs to, and set `onFailure` and `onInvalid` to `true` to receive notifications in case the render fails, or the provided data is invalid.
+After a new entity was persisted successfully, we'll send a new video render request to the Plainly Videos API. 
+
+Besides the render parameters that provide dynamic data for the video, we also include a `webhook` object in the request body to specify where to send the status updates. The `matchupId` is set as `passthrough` data, so we can identify to which matchup the webhook notification belongs to. 
+
+We'll also enable `onFailure` and `onInvalid` webhook options to receive notifications in case the render fails, or the provided data is invalid.
 
 ```ts
   // ./src/actions/renders.ts
@@ -156,7 +164,11 @@ This form will also initiate a video render request to the Plainly Videos API. B
 
 ### Webhook handling
 
-When the video rendering is complete, Plainly Videos will send a webhook notification to the specified URL. The app has an API route set up to handle these webhook requests and update the corresponding matchup status in the database. We will find the matchup by `matchupId` that is returned through `passthrough` from the webhook body. If the render was successful, we will receive `success: true` along with the `output` URL of the rendered video. If the render failed, we will receive the `error` details instead. In case of a successful render, we will update the matchup status to `completed` and store the video URL, and `expirationDate`. If the render failed, we will update the status to `failed`.
+When the video rendering is complete, Plainly Videos will send a webhook notification to the specified URL in a form of a `POST` request. The app has the API route `/api/webhook` set up to handle these webhook notification and update the corresponding matchup status in the database. 
+
+If the render was successful, we will receive `success: true` along with the `output` URL and `expirationDate` of the rendered video. If the render failed, we will receive the `error` details instead. Based on the status, we'll update the database entry accordingly.
+ 
+In order to know what entry in the database needs to be updated, we'll use `passthrough` value from the webhook body. It should point to the `matchupId` that we sent the render request originally.
 
 ```ts
 // ./src/app/api/webhook/route.ts
