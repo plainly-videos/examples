@@ -36,7 +36,7 @@ By working through this example, you'll understand how to:
 2. Install dependencies:
 
     ```bash
-      pnpm install
+      pnpm install --frozen-lockfile
     ```
 3. Upload the After Effects project used in this example to Plainly:
    - Download the example project from [here](./after-effects/Sports%20Matchup.zip).
