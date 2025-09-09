@@ -5,6 +5,7 @@
   "scripts": {
     "db:start": "docker compose up -d db",
     "db:stop": "docker compose down",
+    "db:remove": "docker compose down -v",
     "dev": "next dev",
     "tunnel": "tsx scripts/start-with-tunnel.ts",
     "dev:full": "pnpm db:start && pnpm prisma:generate && pnpm prisma:push && NODE_ENV=development pnpm tunnel",

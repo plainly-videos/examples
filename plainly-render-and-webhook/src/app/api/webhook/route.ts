@@ -18,18 +18,16 @@ import prisma from "../../../../lib/prisma";
  * the payload sent will be slightly different, as it will not contain the output information and error property will contain the error details,
  * allowing for more granular handling of different render outcomes. In our case we will update the status to "failed".
  *
- * After updating the database, the cache for the homepage and the "matchup" tag is revalidated.
- *
  * In case of an error, a 500 status code is returned along with an error message.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Here you can see the example webhook payloads
+    // Here you can see the example webhook payloads that Plainly sends
     // https://help.plainlyvideos.com/docs/user-guide/rendering/video-delivery#webhook-delivery
     const body = await request.json();
     const { passthrough, output, success, expirationDate } = body;
 
-    // Update matchup in DB based on the passthrough data
+    // Update matchup in DB based on the passthrough data, as in /actions/render.ts we set it to the matchup ID
     await prisma.matchup.updateMany({
       where: { id: Number(passthrough) },
       data: {
