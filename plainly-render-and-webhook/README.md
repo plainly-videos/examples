@@ -45,6 +45,9 @@ By working through this example, you'll understand how to:
       - Set the target composition to `editRender`
       - Click on "Generate"
       - This will generate a template with few parameters from layers.
+
+      ![Auto generate template](./.assets/auto-generate-template.png)
+
 4. Set up environment variables:
 
     ```bash
@@ -93,6 +96,8 @@ By working through this example, you'll understand how to:
 Open your browser and navigate to [http://localhost:3000](http://localhost:3000) to access the app. You should see a simple interface where you can select two teams and generate a matchup video, and your Webhook status should be `configured` with the `tunnel` URL.
 
 Application will allow you to create a new matchup by filling out a simple form. Table below the form will show all the match ups created so far, along with their current status and a preview of the rendered video once it's complete.
+
+![App screenshot](./.assets/app.png)
 
 ### Create a new matchup video
 
