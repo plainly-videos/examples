@@ -45,7 +45,7 @@ Found an issue or want to contribute a new example? We welcome contributions! Pl
 
 Need help? Here's how to get support:
 - 📖 Check the [Help center](https://help.plainlyvideos.com/) first.
-- 📧 Contact support through the [form](https://www.plainlyvideos.com/contact).
+- 📧 Open a [new issue](https://github.com/plainly-videos/examples/issues/new).
 
 ---
 
