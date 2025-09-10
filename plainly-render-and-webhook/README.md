@@ -31,7 +31,7 @@ By working through this example, you'll understand how to:
 
     ```bash
     git clone https://github.com/plainly-videos/examples.git
-    cd plainly-render-and-webhook
+    cd examples/plainly-render-and-webhook
     ```
 2. Install dependencies:
 
