@@ -42,8 +42,8 @@ By working through this example, you'll understand how to:
    - Download the example project from [here](./after-effects/Sports%20Matchup.zip).
    - Go to [Upload form](https://app.plainlyvideos.com/dashboard/projects/create) and upload the project.
    - Once the upload is done, auto-generate a template with prefix option:
-      - Set the target composition to `editRender`
-      - Click on "Generate"
+      - Set the target composition to `editRender`.
+      - Click on "Generate".
       - This will generate a template with few parameters from layers.
 
 

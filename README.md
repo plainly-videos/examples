@@ -18,7 +18,7 @@ Before diving into the examples, we recommend checking out these resources:
 
 - 📚 **[Help center](https://help.plainlyvideos.com/)** - General guides, tips and FAQ.
 - 🛠️ **[Developer guide](https://help.plainlyvideos.com/docs/developer-guide)** - Special section for developers integrating Plainly's API.
-- 🌐 **[API reference](https://app.plainlyvideos.com/api-reference)** - Complete REST API reference.
+- 🌐 **[API reference](https://www.plainlyvideos.com/documentation/api-reference)** - Complete REST API reference.
 
 ## Examples
 
