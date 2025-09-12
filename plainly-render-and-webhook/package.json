@@ -54,5 +54,10 @@
     "tsx": "^4.20.5",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "axios": "1.12.0"
+    }
   }
 }
