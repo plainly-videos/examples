@@ -30,8 +30,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Biome check (lint + format)
-        run: pnpm exec biome ci --reporter=github .
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          working-dir: plainly-render-and-webhook
+
+      - name: Run Biome
+        run: biome ci .
 
       - name: Build
         run: pnpm build
@@ -60,8 +65,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          working-dir: ai-crypto-video-agent
+
       - name: Biome check
-        run: pnpm exec biome ci --reporter=github .
+        run: biome ci .
 
       - name: Build
         run: pnpm build
