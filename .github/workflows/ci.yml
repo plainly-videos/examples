@@ -2,7 +2,7 @@ name: Continuous integration
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -23,20 +23,45 @@ jobs:
           version: 10
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: pnpm
-          cache-dependency-path: plainly-render-and-webhook/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Biome check (lint + format)
-        run: pnpm exec biome check --reporter=github .
+        run: pnpm exec biome ci --reporter=github .
 
-      - name: Biome format verification
-        run: pnpm exec biome format .
+      - name: Build
+        run: pnpm build
+
+  build-ai-crypto-video-agent:
+    name: Build ai-crypto-video-agent
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-crypto-video-agent
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Biome check
+        run: pnpm exec biome ci --reporter=github .
 
       - name: Build
         run: pnpm build
