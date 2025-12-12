@@ -21,37 +21,37 @@ const teams = [
   {
     label: "NUGGETS",
     value: "NUGGETS",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/7/76/Denver_Nuggets.svg/800px-Denver_Nuggets.svg.png",
+    logo: "https://content.sportslogos.net/logos/6/229/full/8926_denver_nuggets-primary-2019.png",
   },
   {
     label: "LAKERS",
     value: "LAKERS",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Los_Angeles_Lakers_logo.svg/1024px-Los_Angeles_Lakers_logo.svg.png",
+    logo: "https://content.sportslogos.net/logos/6/237/full/los_angeles_lakers_logo_primary_2024_sportslogosnet-7324.png",
   },
   {
     label: "BULLS",
     value: "BULLS",
-    logo: "https://preview.redd.it/is-it-surprising-to-you-that-the-bulls-logo-has-stood-the-v0-yb42h26bfrfe1.png?auto=webp&s=26d90939a5574f7ecf3fc9d766a5c01a868ac074",
+    logo: "https://content.sportslogos.net/logos/6/221/full/zdrycpc7mh5teihl10gko8sgf.png",
   },
   {
     label: "CELTICS",
     value: "CELTICS",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/Boston_Celtics.svg/1200px-Boston_Celtics.svg.png",
+    logo: "https://content.sportslogos.net/logos/6/213/full/boston_celtics_logo_primary_dark_19978753.png",
   },
   {
     label: "WARRIORS",
     value: "WARRIORS",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/01/Golden_State_Warriors_logo.svg/1200px-Golden_State_Warriors_logo.svg.png",
+    logo: "https://content.sportslogos.net/logos/6/235/full/3152_golden_state_warriors-primary-2020.png",
   },
   {
     label: "HEAT",
     value: "HEAT",
-    logo: "https://logos-world.net/wp-content/uploads/2020/05/Miami-Heat-Symbol.png",
+    logo: "https://content.sportslogos.net/logos/6/214/full/6459_miami_heat-primary_dark-2000.png",
   },
   {
     label: "CLIPPERS",
     value: "CLIPPERS",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/e/ed/Los_Angeles_Clippers_%282024%29.svg/800px-Los_Angeles_Clippers_%282024%29.svg.png",
+    logo: "https://content.sportslogos.net/logos/6/236/full/los_angeles_clippers_logo_primary_2025_sportslogosnet-5542.png",
   },
 ];
 
