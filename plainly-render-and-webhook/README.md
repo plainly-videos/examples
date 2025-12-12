@@ -87,7 +87,7 @@ By working through this example, you'll understand how to:
     🌐 Tunnel URL: https://abc123.loca.lt
     📨 Webhook URL: https://abc123.loca.lt/api/webhook
 
-      ▲ Next.js 15.5.0
+      ▲ Next.js 16.0.10
       - Local:        http://localhost:3000
       - Network:      http://192.168.0.109:3000
       - Environments: .env.local
