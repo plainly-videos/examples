@@ -64,7 +64,9 @@ export class CryptoService {
 		return {
 			prices: Array.isArray(data.prices) ? data.prices : [],
 			market_caps: Array.isArray(data.market_caps) ? data.market_caps : [],
-			total_volumes: Array.isArray(data.total_volumes) ? data.total_volumes : [],
+			total_volumes: Array.isArray(data.total_volumes)
+				? data.total_volumes
+				: [],
 		};
 	}
 
