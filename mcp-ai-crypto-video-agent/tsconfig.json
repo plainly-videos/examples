@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"lib": [
+			"es2024",
+			"ESNext.Array",
+			"ESNext.Collection",
+			"ESNext.Iterator",
+			"dom"
+		],
+		"module": "nodenext",
+		"target": "es2022",
+
+		"strict": true,
+		"skipLibCheck": true,
+		"moduleResolution": "node16",
+
+		"outDir": "dist"
+	}
+}

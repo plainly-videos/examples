@@ -33,6 +33,14 @@ Simply choose an example that matches your use case and follow `README.md` file 
       - User interface for managing video generation requests.
    * **Tech Stack**: Next.js, PostgreSQL, Prisma, TypeScript, Tailwind CSS
 
+2. **[MCP AI Crypto Video Agent](mcp-ai-crypto-video-agent/)**
+   * **Purpose**: Showcases an AI-powered video generation agent that creates cryptocurrency-related videos.
+   * **What it shows**:
+      - Integrating with AI services to generate video content dynamically.
+      - Using Plainly's API to render videos based on AI-generated scripts and assets.
+      - Automating the entire video creation process from content generation to rendering.
+   * **Tech Stack**: Node.js, TypeScript
+
 ## Contributing
 
 Found an issue or want to contribute a new example? We welcome contributions! Please feel free to:
