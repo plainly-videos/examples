@@ -32,7 +32,7 @@ const allowedCoins = new Set(["bitcoin", "ethereum"]);
 if (!allowedCoins.has(options.coin)) {
 	console.error(
 		chalk.red(
-			`Invalid coin "${options.coin}". For this example, only bitcoin and ethereum are supported.`,
+			`Invalid coin "${options.coin}". For this example, only bitcoin and ethereum are supported due to static image mapping.`,
 		),
 	);
 	process.exitCode = 1;
@@ -69,7 +69,7 @@ async function main() {
 			`Found project: ${chalk.green(cryptoProject.name)} (ID: ${cryptoProject.id})`,
 		);
 
-		// Step 4: Get project details
+		// Step 3: Get project details
 		spinner.start("Fetching project details...");
 		const projectDetails = await plainlyService.getProjectDetails(
 			cryptoProject.id,
@@ -159,8 +159,8 @@ function mapCryptoDataToParameters(
 	params.editName = cryptoData.coin; // Crypto name
 	params.editSymbol = cryptoData.coin.substring(0, 3).toUpperCase(); // Symbol (e.g., BTC, ETH)
 	params.editPrice = cryptoData.currentPrice.toFixed(2); // Current price
-	params.editChange24h = `${cryptoData.priceChange24h >= 0 ? "+" : "-"}${cryptoData.priceChange24h.toFixed(2)}`; // 24h change with
-	params.editChange7d = `${cryptoData.priceChange7d >= 0 ? "+" : "-"}${cryptoData.priceChange7d.toFixed(2)}`; // 7d change with
+	params.editChange24h = `${cryptoData.priceChange24h >= 0 ? "+" : "-"}${cryptoData.priceChange24h.toFixed(2)}`; // 24h change with sign
+	params.editChange7d = `${cryptoData.priceChange7d >= 0 ? "+" : "-"}${cryptoData.priceChange7d.toFixed(2)}`; // 7d change with sign
 	params.editImage = imageByCoin[cryptoData.coin.toLowerCase()];
 	params.editDate = new Date().toLocaleDateString("en-US", {
 		month: "short",

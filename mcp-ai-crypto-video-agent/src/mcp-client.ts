@@ -34,15 +34,7 @@ export class MCPClientManager {
 			);
 		}
 
-		// if (!smitheryProfile) {
-		//   throw new Error(
-		//     "SMITHERY_PROFILE not found in environment. Please add it to .env.local",
-		//   );
-		// }
-
 		url.searchParams.set("api_key", apiKey);
-		// url.searchParams.set("profile", smitheryProfile);
-
 		const transport = new StreamableHTTPClientTransport(url);
 
 		this.cryptoClient = new Client(
