@@ -1,12 +1,13 @@
 # MCP AI Crypto Video Agent
 
-Generate a short crypto performance video by combining Free Crypto Coin Data and
-Plainly MCP tools.
+Generate a short crypto performance video using a real OpenAI agent that
+discovers and orchestrates MCP tools for data fetching and rendering.
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 18+ (or newer)
 - [pnpm](https://pnpm.io/) package manager
+- OpenAI API key
 - Smithery API key (Free Crypto Coin Data)
 - Plainly API key
 
@@ -39,7 +40,7 @@ Plainly MCP tools.
     cp .env.example .env.local
     ```
 
-    Update `.env.local` with your Smithery API from [Smithery account settings](https://smithery.ai/account/api-keys) key and Plainly API key from [Plainly settings](https://app.plainlyvideos.com/dashboard/user/settings/general).
+    Update `.env.local` with your OpenAI API key, Smithery API key from [Smithery account settings](https://smithery.ai/account/api-keys), and Plainly API key from [Plainly settings](https://app.plainlyvideos.com/dashboard/user/settings/general).
 
     ```properties
     # Smithery API Key
@@ -47,6 +48,9 @@ Plainly MCP tools.
 
     # Plainly API Key
     PLAINLY_API_KEY=your_plainly_api_key
+
+    # OpenAI API Key
+    OPENAI_API_KEY=your_openai_api_key
     ```
 
 ## Usage
@@ -61,6 +65,7 @@ template uses a static logo mapping for `editImage`.
 
 ## How it works
 
+- The OpenAI agent connects to the MCP servers (crypto data + Plainly).
 - Fetches current price plus 24h/7d change for the coin.
 - Finds the Plainly project named "Crypto 2025".
 - Uses the first template variant and maps data into parameters.

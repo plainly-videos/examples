@@ -2,171 +2,187 @@
 
 /**
  * MCP AI Crypto Video Agent
- * Example demonstrating how to use Free Crypto Coin Data and Plainly MCP tools
+ * Autonomous agent-based system using OpenAI Agents with MCP servers
+ *
+ * The agents autonomously:
+ * - Discover and use MCP tools
+ * - Coordinate with each other
+ * - Generate videos from cryptocurrency data
  */
 
+import type { AgentInputItem } from "@openai/agents";
+import {
+	Agent,
+	MCPServerStdio,
+	MCPServerStreamableHttp,
+	run,
+} from "@openai/agents";
 import chalk from "chalk";
 import { Command } from "commander";
-import ora from "ora";
-import { CryptoService } from "./crypto.js";
-import { MCPClientManager } from "./mcp-client.js";
-import { PlainlyService } from "./plainly.js";
-import type { CryptoData } from "./types.js";
+import { config } from "dotenv";
+import { logRunStream } from "./agent-logging.js";
+
+// Load environment variables
+config({ path: ".env.local" });
 
 const program = new Command();
 
 program
 	.name("crypto-video-agent")
-	.description("Generate crypto performance videos using MCP tools")
-	.version("1.0.0")
+	.description("Autonomous AI agents generate crypto videos using MCP tools")
+	.version("0.1.0")
 	.option(
 		"-c, --coin <symbol>",
-		"Cryptocurrency symbol (bitcoin or ethereum)",
+		"Cryptocurrency symbol (bitcoin, ethereum)",
 		"bitcoin",
 	)
 	.parse(process.argv.filter((arg) => arg !== "--"));
 
 const options = program.opts();
-const allowedCoins = new Set(["bitcoin", "ethereum"]);
-
-if (!allowedCoins.has(options.coin)) {
-	console.error(
-		chalk.red(
-			`Invalid coin "${options.coin}". For this example, only bitcoin and ethereum are supported due to static image mapping.`,
-		),
-	);
-	process.exitCode = 1;
-} else {
-	main();
-}
 
 async function main() {
-	console.log(chalk.cyan.bold("\n🎬 MCP AI Crypto Video Agent\n"));
+	console.log(chalk.cyan.bold("\n🎬 MCP AI Crypto Video Agent"));
+	console.log(chalk.gray("Autonomous agents with MCP tool integration\n"));
 
-	const mcpClient = new MCPClientManager();
-	const cryptoService = new CryptoService(mcpClient);
-	const plainlyService = new PlainlyService(mcpClient);
+	// Verify API keys
+	if (!process.env.OPENAI_API_KEY) {
+		console.error(chalk.red("❌ OPENAI_API_KEY not found in environment"));
+		console.error(chalk.gray("   Add it to .env.local file"));
+		process.exit(1);
+	}
+
+	if (!process.env.PLAINLY_API_KEY) {
+		console.error(chalk.red("❌ PLAINLY_API_KEY not found in environment"));
+		console.error(chalk.gray("   Add it to .env.local file"));
+		process.exit(1);
+	}
+
+	if (!process.env.SMITHERY_API_KEY) {
+		console.error(chalk.red("❌ SMITHERY_API_KEY not found in environment"));
+		console.error(chalk.gray("   Add it to .env.local file"));
+		process.exit(1);
+	}
 
 	try {
-		// Step 1: Fetch crypto data
-		const spinner = ora("Fetching cryptocurrency data...").start();
-		const cryptoData = await cryptoService.getCryptoData(options.coin);
-		spinner.succeed(
-			`Fetched ${chalk.green(cryptoData.coin)} data: ${chalk.yellow(`$${cryptoData.currentPrice.toFixed(2)}`)} (24h: ${cryptoData.priceChange24h >= 0 ? chalk.green("+") : chalk.red("")}${cryptoData.priceChange24h.toFixed(2)}%, 7d: ${cryptoData.priceChange7d >= 0 ? chalk.green("+") : chalk.red("")}${cryptoData.priceChange7d.toFixed(2)}%)`,
+		// Connect to MCP servers
+		console.log("🔌 Connecting to MCP servers...");
+
+		const url = new URL(
+			"https://server.smithery.ai/@Liam8/free-coin-price-mcp/mcp",
 		);
+		url.searchParams.set("api_key", process.env.SMITHERY_API_KEY);
+		const cryptoServer = new MCPServerStreamableHttp({ url: url.toString() });
 
-		// Step 2: Discover projects
-		spinner.start("Discovering Plainly projects...");
-		const cryptoProject = await plainlyService.findCryptoProject();
+		const plainlyServer = new MCPServerStdio({
+			fullCommand: "npx -y @plainly-videos/mcp-server@latest",
+			env: { PLAINLY_API_KEY: process.env.PLAINLY_API_KEY },
+		});
 
-		if (!cryptoProject) {
-			spinner.fail('Could not find "Crypto 2025" project');
-			process.exitCode = 1;
-			return;
-		}
+		await Promise.all([cryptoServer.connect(), plainlyServer.connect()]);
+		console.log("  ✅ Connected to Crypto MCP server");
+		console.log("  ✅ Connected to Plainly MCP server\n");
 
-		spinner.succeed(
-			`Found project: ${chalk.green(cryptoProject.name)} (ID: ${cryptoProject.id})`,
+		// Create the orchestrator agent
+		const orchestrator = new Agent({
+			name: "Video Production Orchestrator",
+			instructions: `You are a video production orchestrator that coordinates cryptocurrency video generation.
+
+Your workflow:
+1. Use crypto MCP tools to fetch data for "${options.coin}"
+2. Analyze the crypto data and extract key metrics (price, 24h change, 7d change)
+3. Use Plainly MCP tools to discover the best project for a cryptocurrency data, try with keywords like "crypto", or similar.
+4. Map the crypto data to template parameters. Don't use symbols "$" or "%" in the parameter fields, but you can use "+" and "-" signs for the changes. For the images, use assets from https://assets.coingecko.com/coins/...
+5. Render the video using the Plainly tools
+6. Monitor render status until completion.
+7. Return the final video URL
+
+Be autonomous and figure out which MCP tools to use. The crypto tools are for fetching cryptocurrency data, and Plainly tools are for video rendering.
+
+Describe each step you take and your thinking process in plain language (no JSON). Summarize key facts only, avoid raw tool responses, and keep it concise.
+
+Do not end the workflow until you have the final video URL. If the render is still in progress, wait 15 seconds and check again.
+
+When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
+			mcpServers: [cryptoServer, plainlyServer],
+		});
+
+		console.log(
+			chalk.cyan(
+				`🤖 Orchestrator: Starting autonomous workflow for ${options.coin}...\n`,
+			),
 		);
+		console.log("═".repeat(60));
 
-		// Step 3: Get project details
-		spinner.start("Fetching project details...");
-		const projectDetails = await plainlyService.getProjectDetails(
-			cryptoProject.id,
-			false,
-		);
+		const truncate = (value: string, max = 300) =>
+			value.length > max ? `${value.slice(0, max)}...` : value;
 
-		spinner.succeed(
-			`Project has ${projectDetails.itemDetails?.length || 0} variant(s)`,
-		);
+		const formatValue = (value: unknown) =>
+			typeof value === "string" ? value : JSON.stringify(value ?? {});
 
-		// Use the first template variant
-		const template = projectDetails.itemDetails?.[0];
-		if (!template) {
-			spinner.fail("No template variants found");
-			process.exitCode = 1;
-			return;
-		}
+		const runWithLogging = async (
+			input: string | AgentInputItem[],
+			label: string,
+		) => {
+			console.log(chalk.gray(`\n▶ ${label}`));
+			const result = await run(orchestrator, input, {
+				stream: true,
+				maxTurns: 30,
+			});
 
-		console.log(chalk.gray(`Using template: ${template.templateVariantId}`));
+			await logRunStream(result);
 
-		// Step 4: Map crypto data to template parameters
-		const parameters = mapCryptoDataToParameters(cryptoData);
-		console.log(chalk.gray("Parameters mapped successfully\n"));
-
-		// Step 5: Render video
-		spinner.start("Submitting render request...");
-		const renderId = await plainlyService.renderVideo(
-			template.projectDesignId,
-			template.templateVariantId,
-			false,
-			parameters,
-		);
-		spinner.succeed(`Render submitted: ${chalk.yellow(renderId)}`);
-
-		// Step 6: Poll for completion
-		spinner.start("Rendering video...");
-		let lastState = "";
-
-		const finalStatus = await plainlyService.pollRenderStatus(
-			renderId,
-			(status) => {
-				if (status.state !== lastState) {
-					lastState = status.state;
-					spinner.text = `Rendering video... (${chalk.yellow(status.state)})`;
-				}
-			},
-		);
-
-		if (finalStatus.state === "DONE") {
-			spinner.succeed(chalk.green.bold("Video rendered successfully! ✨"));
-			console.log(
-				chalk.cyan("\n📹 Video URL:"),
-				chalk.underline.blue(finalStatus.output),
-			);
-		} else {
-			spinner.fail(`Render failed: ${finalStatus.state}`);
-			if (finalStatus.error) {
-				console.error(chalk.red(finalStatus.error));
+			if (result.finalOutput) {
+				console.log(
+					chalk.green(
+						`\n✅ Final Output: ${truncate(formatValue(result.finalOutput))}`,
+					),
+				);
 			}
-			process.exitCode = 1;
-			return;
+
+			return result;
+		};
+
+		const initialInput = `Generate a cryptocurrency performance video for ${options.coin}. Fetch the latest data, find the appropriate template, and render the video. Return the final video URL.`;
+
+		let result = await runWithLogging(initialInput, "Initial run");
+		let finalOutput = formatValue(result.finalOutput);
+		let attempts = 0;
+
+		while (!finalOutput.includes("VIDEO_URL:") && attempts < 10) {
+			attempts += 1;
+			console.log(
+				chalk.yellow(
+					`⏱️ Waiting 15 seconds before checking render status again (attempt ${attempts}/10)...`,
+				),
+			);
+			await new Promise((resolve) => setTimeout(resolve, 15000));
+
+			const followUpInput: AgentInputItem[] = [
+				...result.history,
+				{
+					role: "user",
+					content:
+						"Continue monitoring the render status. If complete, respond with VIDEO_URL: [url]. If not complete, wait 15 seconds and check again.",
+				},
+			];
+
+			result = await runWithLogging(followUpInput, `Follow-up run ${attempts}`);
+			finalOutput = formatValue(result.finalOutput);
 		}
+
+		if (!finalOutput.includes("VIDEO_URL:")) {
+			console.log(
+				chalk.yellow(
+					"⚠️ Render may still be in progress. Re-run to continue monitoring or check Plainly directly.",
+				),
+			);
+		}
+
+		process.exit(0);
 	} catch (error) {
 		console.error(chalk.red("\n❌ Error:"), error);
-		process.exitCode = 1;
-	} finally {
-		await mcpClient.close();
+		process.exit(1);
 	}
 }
 
-/**
- * Map crypto data to template parameters
- * This is where you customize the video content based on crypto data
- */
-function mapCryptoDataToParameters(
-	cryptoData: CryptoData,
-): Record<string, unknown> {
-	const params: Record<string, unknown> = {};
-	const imageByCoin: Record<string, string> = {
-		bitcoin: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png",
-		ethereum:
-			"https://assets.coingecko.com/coins/images/279/large/ethereum.png",
-	};
-
-	// Map data to Crypto 2025 template parameters
-	// Based on actual template: editName, editSymbol, editPrice, editChange24h, editChange7d, editImage, editDate, editOutroText
-	params.editName = cryptoData.coin; // Crypto name
-	params.editSymbol = cryptoData.coin.substring(0, 3).toUpperCase(); // Symbol (e.g., BTC, ETH)
-	params.editPrice = cryptoData.currentPrice.toFixed(2); // Current price
-	params.editChange24h = `${cryptoData.priceChange24h >= 0 ? "+" : "-"}${cryptoData.priceChange24h.toFixed(2)}`; // 24h change with sign
-	params.editChange7d = `${cryptoData.priceChange7d >= 0 ? "+" : "-"}${cryptoData.priceChange7d.toFixed(2)}`; // 7d change with sign
-	params.editImage = imageByCoin[cryptoData.coin.toLowerCase()];
-	params.editDate = new Date().toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
-
-	return params;
-}
+main();
