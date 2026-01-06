@@ -4,8 +4,9 @@
 	"main": "index.js",
 	"private": true,
 	"scripts": {
+		"clean": "rm -rf dist",
 		"start": "tsx src/index.ts",
-		"build": "pnpm tsc",
+		"build": "pnpm clean && pnpm tsc",
 		"biome": "biome check .",
 		"biome:fix": "biome check . --write"
 	},
