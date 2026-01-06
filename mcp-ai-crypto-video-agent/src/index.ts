@@ -20,7 +20,12 @@ import {
 import chalk from "chalk";
 import { Command } from "commander";
 import { config } from "dotenv";
-import { logRunStream } from "./agent-logging.js";
+import { formatValue, logRunStream, truncate } from "./agent-logging.js";
+
+const STATUS_POLL_INTERVAL = 15000;
+const MAX_RENDER_CHECKS = 10;
+const MAX_TURNS = 30;
+const MAX_LOG_LENGTH = 300;
 
 // Load environment variables
 config({ path: ".env.local" });
@@ -40,6 +45,20 @@ program
 
 const options = program.opts();
 
+const allowedCoins = ["bitcoin", "ethereum"] as const;
+const providedCoin = String(options.coin ?? "").toLowerCase();
+if (!allowedCoins.includes(providedCoin as (typeof allowedCoins)[number])) {
+	console.error(
+		chalk.red(
+			`❌ Invalid coin symbol "${options.coin}". Allowed values: ${allowedCoins.join(
+				", ",
+			)}`,
+		),
+	);
+	process.exit(1);
+}
+options.coin = providedCoin;
+
 async function main() {
 	console.log(chalk.cyan.bold("\n🎬 MCP AI Crypto Video Agent"));
 	console.log(chalk.gray("Autonomous agents with MCP tool integration\n"));
@@ -48,20 +67,26 @@ async function main() {
 	if (!process.env.OPENAI_API_KEY) {
 		console.error(chalk.red("❌ OPENAI_API_KEY not found in environment"));
 		console.error(chalk.gray("   Add it to .env.local file"));
-		process.exit(1);
+		process.exitCode = 1;
+		return;
 	}
 
 	if (!process.env.PLAINLY_API_KEY) {
 		console.error(chalk.red("❌ PLAINLY_API_KEY not found in environment"));
 		console.error(chalk.gray("   Add it to .env.local file"));
-		process.exit(1);
+		process.exitCode = 1;
+		return;
 	}
 
 	if (!process.env.SMITHERY_API_KEY) {
 		console.error(chalk.red("❌ SMITHERY_API_KEY not found in environment"));
 		console.error(chalk.gray("   Add it to .env.local file"));
-		process.exit(1);
+		process.exitCode = 1;
+		return;
 	}
+
+	let cryptoServer: MCPServerStreamableHttp | undefined;
+	let plainlyServer: MCPServerStdio | undefined;
 
 	try {
 		// Connect to MCP servers
@@ -71,9 +96,9 @@ async function main() {
 			"https://server.smithery.ai/@Liam8/free-coin-price-mcp/mcp",
 		);
 		url.searchParams.set("api_key", process.env.SMITHERY_API_KEY);
-		const cryptoServer = new MCPServerStreamableHttp({ url: url.toString() });
+		cryptoServer = new MCPServerStreamableHttp({ url: url.toString() });
 
-		const plainlyServer = new MCPServerStdio({
+		plainlyServer = new MCPServerStdio({
 			fullCommand: "npx -y @plainly-videos/mcp-server@latest",
 			env: { PLAINLY_API_KEY: process.env.PLAINLY_API_KEY },
 		});
@@ -97,10 +122,9 @@ Your workflow:
 7. Return the final video URL
 
 Be autonomous and figure out which MCP tools to use. The crypto tools are for fetching cryptocurrency data, and Plainly tools are for video rendering.
-
 Describe each step you take and your thinking process in plain language (no JSON). Summarize key facts only, avoid raw tool responses, and keep it concise.
-
 Do not end the workflow until you have the final video URL. If the render is still in progress, wait 15 seconds and check again.
+If for any reason you cannot proceed, or you are experiencing issue, as of you not understanding the situation, respond with a clear explanation of the problem, even if you find the solution later.
 
 When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
 			mcpServers: [cryptoServer, plainlyServer],
@@ -113,12 +137,6 @@ When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
 		);
 		console.log("═".repeat(60));
 
-		const truncate = (value: string, max = 300) =>
-			value.length > max ? `${value.slice(0, max)}...` : value;
-
-		const formatValue = (value: unknown) =>
-			typeof value === "string" ? value : JSON.stringify(value ?? {});
-
 		const runWithLogging = async (
 			input: string | AgentInputItem[],
 			label: string,
@@ -126,7 +144,7 @@ When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
 			console.log(chalk.gray(`\n▶ ${label}`));
 			const result = await run(orchestrator, input, {
 				stream: true,
-				maxTurns: 30,
+				maxTurns: MAX_TURNS,
 			});
 
 			await logRunStream(result);
@@ -134,7 +152,7 @@ When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
 			if (result.finalOutput) {
 				console.log(
 					chalk.green(
-						`\n✅ Final Output: ${truncate(formatValue(result.finalOutput))}`,
+						`\n✅ Final Output: ${truncate(formatValue(result.finalOutput), MAX_LOG_LENGTH)}`,
 					),
 				);
 			}
@@ -148,14 +166,17 @@ When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
 		let finalOutput = formatValue(result.finalOutput);
 		let attempts = 0;
 
-		while (!finalOutput.includes("VIDEO_URL:") && attempts < 10) {
+		while (
+			!finalOutput.includes("VIDEO_URL:") &&
+			attempts < MAX_RENDER_CHECKS
+		) {
 			attempts += 1;
 			console.log(
 				chalk.yellow(
-					`⏱️ Waiting 15 seconds before checking render status again (attempt ${attempts}/10)...`,
+					`⏱️ Waiting 15 seconds before checking render status again (attempt ${attempts}/${MAX_RENDER_CHECKS})...`,
 				),
 			);
-			await new Promise((resolve) => setTimeout(resolve, 15000));
+			await new Promise((resolve) => setTimeout(resolve, STATUS_POLL_INTERVAL));
 
 			const followUpInput: AgentInputItem[] = [
 				...result.history,
@@ -178,10 +199,36 @@ When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
 			);
 		}
 
-		process.exit(0);
+		process.exitCode = 0;
 	} catch (error) {
 		console.error(chalk.red("\n❌ Error:"), error);
-		process.exit(1);
+		process.exitCode = 1;
+	} finally {
+		const closeWithTimeout = async (
+			server: MCPServerStreamableHttp | MCPServerStdio | undefined,
+			label: string,
+			timeoutMs = 2000,
+		) => {
+			if (!server) {
+				return;
+			}
+			const timeout = new Promise<void>((_, reject) => {
+				const timer = setTimeout(() => {
+					clearTimeout(timer);
+					reject(new Error(`${label} close timed out`));
+				}, timeoutMs);
+			});
+			try {
+				await Promise.race([server.close(), timeout]);
+			} catch (error) {
+				console.warn(chalk.yellow(`⚠️ ${label} did not close cleanly:`), error);
+			}
+		};
+
+		await Promise.allSettled([
+			closeWithTimeout(cryptoServer, "Crypto MCP server"),
+			closeWithTimeout(plainlyServer, "Plainly MCP server"),
+		]);
 	}
 }
 
