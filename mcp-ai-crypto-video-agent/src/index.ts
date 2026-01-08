@@ -10,54 +10,23 @@
  * - Generate videos from cryptocurrency data
  */
 
-import type { AgentInputItem } from "@openai/agents";
+import { stdin, stdout } from "node:process";
+import * as readline from "node:readline/promises";
 import {
 	Agent,
+	getAllMcpTools,
 	MCPServerStdio,
 	MCPServerStreamableHttp,
 	run,
+	withTrace,
 } from "@openai/agents";
 import chalk from "chalk";
-import { Command } from "commander";
 import { config } from "dotenv";
-import { formatValue, logRunStream, truncate } from "./agent-logging.js";
 
-const STATUS_POLL_INTERVAL = 15000;
-const MAX_RENDER_CHECKS = 10;
-const MAX_TURNS = 30;
-const MAX_LOG_LENGTH = 300;
+const MAX_TURNS = 100;
 
 // Load environment variables
 config({ path: ".env.local" });
-
-const program = new Command();
-
-program
-	.name("crypto-video-agent")
-	.description("Autonomous AI agents generate crypto videos using MCP tools")
-	.version("0.1.0")
-	.option(
-		"-c, --coin <symbol>",
-		"Cryptocurrency symbol (bitcoin, ethereum)",
-		"bitcoin",
-	)
-	.parse(process.argv.filter((arg) => arg !== "--"));
-
-const options = program.opts();
-
-const allowedCoins = ["bitcoin", "ethereum"] as const;
-const providedCoin = String(options.coin ?? "").toLowerCase();
-if (!allowedCoins.includes(providedCoin as (typeof allowedCoins)[number])) {
-	console.error(
-		chalk.red(
-			`❌ Invalid coin symbol "${options.coin}". Allowed values: ${allowedCoins.join(
-				", ",
-			)}`,
-		),
-	);
-	process.exit(1);
-}
-options.coin = providedCoin;
 
 async function main() {
 	console.log(chalk.cyan.bold("\n🎬 MCP AI Crypto Video Agent"));
@@ -85,151 +54,124 @@ async function main() {
 		return;
 	}
 
-	let cryptoServer: MCPServerStreamableHttp | undefined;
-	let plainlyServer: MCPServerStdio | undefined;
+	const smitheryUrl = "https://server.smithery.ai";
+	const servers: Array<MCPServerStdio | MCPServerStreamableHttp> = [];
+	const rl = readline.createInterface({ input: stdin, output: stdout });
+	rl.on("SIGINT", () => rl.close());
+
+	const cryptoUrl = new URL(`${smitheryUrl}/@Liam8/free-coin-price-mcp/mcp`);
+	cryptoUrl.searchParams.set("api_key", process.env.SMITHERY_API_KEY);
+	const cryptoServer = new MCPServerStreamableHttp({
+		name: "Crypto MCP Server",
+		url: cryptoUrl.toString(),
+	});
+
+	const plainlyServer = new MCPServerStdio({
+		name: "Plainly MCP Server",
+		fullCommand: "npx -y @plainly-videos/mcp-server@latest",
+		env: { PLAINLY_API_KEY: process.env.PLAINLY_API_KEY },
+	});
 
 	try {
-		// Connect to MCP servers
 		console.log("🔌 Connecting to MCP servers...");
+		servers.push(cryptoServer, plainlyServer);
+		for (const server of servers) {
+			await server.connect();
+			console.log(`  ✅ Connected to ${server.name}`);
+		}
+		console.log("");
 
-		const url = new URL(
-			"https://server.smithery.ai/@Liam8/free-coin-price-mcp/mcp",
-		);
-		url.searchParams.set("api_key", process.env.SMITHERY_API_KEY);
-		cryptoServer = new MCPServerStreamableHttp({ url: url.toString() });
-
-		plainlyServer = new MCPServerStdio({
-			fullCommand: "npx -y @plainly-videos/mcp-server@latest",
-			env: { PLAINLY_API_KEY: process.env.PLAINLY_API_KEY },
-		});
-
-		await Promise.all([cryptoServer.connect(), plainlyServer.connect()]);
-		console.log("  ✅ Connected to Crypto MCP server");
-		console.log("  ✅ Connected to Plainly MCP server\n");
-
-		// Create the orchestrator agent
-		const orchestrator = new Agent({
-			name: "Video Production Orchestrator",
-			instructions: `You are a video production orchestrator that coordinates cryptocurrency video generation.
-
-Your workflow:
-1. Use crypto MCP tools to fetch data for "${options.coin}"
-2. Analyze the crypto data and extract key metrics (price, 24h change, 7d change)
-3. Use Plainly MCP tools to discover the best project for a cryptocurrency data, try with keywords like "crypto", or similar.
-4. Map the crypto data to template parameters. Don't use symbols "$" or "%" in the parameter fields, but you can use "+" and "-" signs for the changes. For the images, use assets from https://assets.coingecko.com/coins/...
-5. Render the video using the Plainly tools
-6. Monitor render status until completion.
-7. Return the final video URL
-
-Be autonomous and figure out which MCP tools to use. The crypto tools are for fetching cryptocurrency data, and Plainly tools are for video rendering.
-Describe each step you take and your thinking process in plain language (no JSON). Summarize key facts only, avoid raw tool responses, and keep it concise.
-Do not end the workflow until you have the final video URL. If the render is still in progress, wait 15 seconds and check again.
-If for any reason you cannot proceed, or you are experiencing issue, as of you not understanding the situation, respond with a clear explanation of the problem, even if you find the solution later.
-
-When you have the final video URL, respond with: "VIDEO_URL: [url]"`,
-			mcpServers: [cryptoServer, plainlyServer],
-		});
-
-		console.log(
-			chalk.cyan(
-				`🤖 Orchestrator: Starting autonomous workflow for ${options.coin}...\n`,
-			),
-		);
-		console.log("═".repeat(60));
-
-		const runWithLogging = async (
-			input: string | AgentInputItem[],
-			label: string,
-		) => {
-			console.log(chalk.gray(`\n▶ ${label}`));
-			const result = await run(orchestrator, input, {
-				stream: true,
-				maxTurns: MAX_TURNS,
+		await withTrace("agent-run", async () => {
+			const allToolsWithOptions = await getAllMcpTools({
+				mcpServers: servers,
 			});
 
-			await logRunStream(result);
+			const agent = new Agent({
+				name: "MCP Assistant with Crypto and Plainly Tools",
+				instructions: `
+- You must always use the MCP tools to answer questions. The mcp server knows which repo to investigate, so you do not need to ask the user about it.
+- Use the available tools to help the user create a video about cryptocurrency data.
+- Look for a Crypto projects in Plainly that would be suitable for the user's video, and based on its parameters and data, give the user suggestions on what video to create, if he asks.
+- Always use USD, and never suggest other currencies (project has $ sign).
+- Always include current price, price change in 24h and 7d, and the date.
+- Don't use symbols "$", "%" in the video text, but you can use "+" and "-" for changes.
+- Use images from coingecko where possible, but first ask the user if they have specific coin image they want to use.
+- Once you submit a video, keep the info about the render job, ask the user if they want to check the video status.
+				`,
+				tools: allToolsWithOptions,
+			});
 
-			if (result.finalOutput) {
-				console.log(
-					chalk.green(
-						`\n✅ Final Output: ${truncate(formatValue(result.finalOutput), MAX_LOG_LENGTH)}`,
-					),
-				);
+			const initialInput =
+				"Greet yourself to a user and explain who you are. Tell the user that he can quit the session anytime by typing 'exit' or 'quit'.";
+			console.log(chalk.blue.bold("🤖 Agent Starting...\n"));
+			const result = await run(agent, initialInput, { maxTurns: MAX_TURNS });
+			const safeInitialOutput = result.finalOutput ?? "(No response)";
+			console.log(safeInitialOutput);
+
+			const history: Array<{
+				role: "user" | "assistant";
+				content: string;
+			}> = [{ role: "assistant", content: safeInitialOutput }];
+
+			while (true) {
+				let userInput = "";
+				try {
+					userInput = await rl.question(chalk.green("🧑 You: "));
+				} catch {
+					break;
+				}
+
+				const trimmed = userInput.trim();
+				if (!trimmed) {
+					continue;
+				}
+
+				if (
+					trimmed.toLowerCase() === "exit" ||
+					trimmed.toLowerCase() === "quit"
+				) {
+					break;
+				}
+
+				history.push({ role: "user", content: trimmed });
+				const prompt = buildConversationPrompt(history);
+				const turnResult = await run(agent, prompt, { maxTurns: MAX_TURNS });
+				const safeTurnOutput = turnResult.finalOutput ?? "(No response)";
+				history.push({ role: "assistant", content: safeTurnOutput });
+				console.log(chalk.blueBright("🤖 Agent:"), safeTurnOutput);
 			}
 
-			return result;
-		};
-
-		const initialInput = `Generate a cryptocurrency performance video for ${options.coin}. Fetch the latest data, find the appropriate template, and render the video. Return the final video URL.`;
-
-		let result = await runWithLogging(initialInput, "Initial run");
-		let finalOutput = formatValue(result.finalOutput);
-		let attempts = 0;
-
-		while (
-			!finalOutput.includes("VIDEO_URL:") &&
-			attempts < MAX_RENDER_CHECKS
-		) {
-			attempts += 1;
-			console.log(
-				chalk.yellow(
-					`⏱️ Waiting 15 seconds before checking render status again (attempt ${attempts}/${MAX_RENDER_CHECKS})...`,
-				),
-			);
-			await new Promise((resolve) => setTimeout(resolve, STATUS_POLL_INTERVAL));
-
-			const followUpInput: AgentInputItem[] = [
-				...result.history,
-				{
-					role: "user",
-					content:
-						"Continue monitoring the render status. If complete, respond with VIDEO_URL: [url]. If not complete, wait 15 seconds and check again.",
-				},
-			];
-
-			result = await runWithLogging(followUpInput, `Follow-up run ${attempts}`);
-			finalOutput = formatValue(result.finalOutput);
-		}
-
-		if (!finalOutput.includes("VIDEO_URL:")) {
-			console.log(
-				chalk.yellow(
-					"⚠️ Render may still be in progress. Re-run to continue monitoring or check Plainly directly.",
-				),
-			);
-		}
-
-		process.exitCode = 0;
-	} catch (error) {
-		console.error(chalk.red("\n❌ Error:"), error);
-		process.exitCode = 1;
+			console.log(chalk.blue.bold("\n🤖 Agent session ended."));
+		});
 	} finally {
-		const closeWithTimeout = async (
-			server: MCPServerStreamableHttp | MCPServerStdio | undefined,
-			label: string,
-			timeoutMs = 2000,
-		) => {
-			if (!server) {
-				return;
-			}
-			const timeout = new Promise<void>((_, reject) => {
-				const timer = setTimeout(() => {
-					clearTimeout(timer);
-					reject(new Error(`${label} close timed out`));
-				}, timeoutMs);
-			});
-			try {
-				await Promise.race([server.close(), timeout]);
-			} catch (error) {
-				console.warn(chalk.yellow(`⚠️ ${label} did not close cleanly:`), error);
-			}
-		};
-
-		await Promise.allSettled([
-			closeWithTimeout(cryptoServer, "Crypto MCP server"),
-			closeWithTimeout(plainlyServer, "Plainly MCP server"),
-		]);
+		try {
+			await Promise.all(servers.map((server) => server.close()));
+			console.log(chalk.gray("\n🔌 Closed MCP server connections."));
+			rl.close();
+		} catch (error) {
+			console.error(chalk.red("❌ Error closing MCP servers:"), error);
+		}
 	}
 }
 
-main();
+function buildConversationPrompt(
+	history: Array<{ role: "user" | "assistant"; content: string }>,
+) {
+	const lines = history.map((entry) => {
+		const label = entry.role === "user" ? "User" : "Assistant";
+		return `${label}: ${entry.content}`;
+	});
+	return [
+		"You are in a live conversation with the user. Continue the dialogue and respond to the latest user message.",
+		"",
+		"Conversation so far:",
+		...lines,
+		"",
+		"Assistant:",
+	].join("\n");
+}
+
+main().catch((err) => {
+	console.error(chalk.red("❌ Unhandled Error:"), err);
+	process.exit(1);
+});
