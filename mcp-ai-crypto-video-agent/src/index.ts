@@ -97,6 +97,7 @@ async function main() {
 - Don't use symbols "$", "%" in the video text, but you can use "+" and "-" for changes.
 - Use images from coingecko where possible, but first ask the user if they have specific coin image they want to use.
 - Once you submit a video, keep the info about the render job, ask the user if they want to check the video status.
+- If there is a failure at any point, don't proceed further, but inform the user about the failure and ask them if they want to try again.
 				`,
 				tools: allToolsWithOptions,
 			});
