@@ -1,7 +1,7 @@
 # MCP AI Crypto Video Agent
 
 Generate a short crypto performance video using a real OpenAI agent that
-discovers and orchestrates MCP tools for data fetching and rendering.
+talks with you and orchestrates MCP tools for data fetching and rendering.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ discovers and orchestrates MCP tools for data fetching and rendering.
     - Download the example project from [here](./after-effects/Crypto%202025.zip).
     - Go to [Upload form](https://app.plainlyvideos.com/dashboard/projects/create) and upload the project.
     - Once the upload is done, auto-generate a template with prefix option:
-       - Set the prefixes to `edit`, which will include all compositions starting with `edit` and their parameters.
+        - Set the prefixes to `edit`, which will include all compositions starting with `edit` and their parameters.
         - Click on "Generate".
         - This will generate a template with few parameters from layers.
 
@@ -55,40 +55,26 @@ discovers and orchestrates MCP tools for data fetching and rendering.
 
 ## Usage
 
-- Default coin (bitcoin):
-  - `pnpm start`
-- Specify a coin:
-  - `pnpm start -- --coin ethereum`
+Start the interactive agent:
 
-For this example, only `bitcoin` and `ethereum` are supported because the
-template uses a static logo mapping for `editImage`.
+```bash
+pnpm start
+```
+
+The agent will greet you and guide the conversation. Ask for a crypto video,
+specify the coin, and confirm the data or image choices it proposes. Type
+`exit` or `quit` to end the session.
 
 ## How it works
 
-- The OpenAI agent connects to the MCP servers (crypto data + Plainly).
-- Fetches current price plus 24h/7d change for the coin.
-- Finds the Plainly project named "Crypto 2025".
-- Uses the first template variant and maps data into parameters.
-- Submits a render and polls until completion.
-
-## Template parameters
-
-The example maps these fields for the "Crypto 2025" template:
-
-- `editName`
-- `editSymbol`
-- `editPrice`
-- `editChange24h`
-- `editChange7d`
-- `editImage`
-- `editDate`
-
-If your template uses different parameter names, update the mapping in
-`src/index.ts`.
+- Connects to the MCP servers (crypto data + Plainly).
+- Runs an OpenAI agent that chats with you and uses MCP tools to gather data.
+- Builds a video render plan based on your input and the template data.
+- Submits a render and keeps the job details, so you can ask for status updates.
 
 ## Scripts
 
-- `pnpm start` - run the agent
-- `pnpm build` - typecheck with TypeScript
+- `pnpm start` - run the interactive agent
+- `pnpm build` - type check with TypeScript
 - `pnpm biome` - lint and format check
 - `pnpm biome:fix` - auto-fix lint issues

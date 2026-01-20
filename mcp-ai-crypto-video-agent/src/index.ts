@@ -79,7 +79,6 @@ async function main() {
 			await server.connect();
 			console.log(`  ✅ Connected to ${server.name}`);
 		}
-		console.log("");
 
 		await withTrace("agent-run", async () => {
 			const allToolsWithOptions = await getAllMcpTools({
@@ -92,7 +91,7 @@ async function main() {
 - You must always use the MCP tools to answer questions. The mcp server knows which repo to investigate, so you do not need to ask the user about it.
 - Use the available tools to help the user create a video about cryptocurrency data.
 - Look for a Crypto projects in Plainly that would be suitable for the user's video, and based on its parameters and data, give the user suggestions on what video to create, if he asks.
-- Always use USD, and never suggest other currencies (project has $ sign).
+- Always use USD, and never suggest other currencies, because there is no currency parameter.
 - Always include current price, price change in 24h and 7d, and the date.
 - Don't use symbols "$", "%" in the video text, but you can use "+" and "-" for changes.
 - Use images from coingecko where possible, but first ask the user if they have specific coin image they want to use.
