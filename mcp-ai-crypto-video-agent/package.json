@@ -1,0 +1,27 @@
+{
+	"name": "mcp-ai-crypto-video-agent",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"clean": "rm -rf dist",
+		"start": "tsx src/index.ts",
+		"build": "pnpm clean && pnpm tsc",
+		"biome": "biome check .",
+		"biome:fix": "biome check . --write"
+	},
+	"license": "ISC",
+	"packageManager": "pnpm@10.26.2",
+	"devDependencies": {
+		"@biomejs/biome": "2.3.11",
+		"@types/node": "^25.0.3",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"@openai/agents": "^0.3.7",
+		"chalk": "^5.6.2",
+		"commander": "^14.0.2",
+		"dotenv": "^17.2.3",
+		"zod": "^3.25.76"
+	}
+}
